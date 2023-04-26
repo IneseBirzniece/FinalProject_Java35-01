@@ -26,33 +26,33 @@ CREATE TABLE tools (
     name TEXT(100) NOT NULL,
     specifications TEXT(250) NOT NULL,
     serviceHours INT,
-    priceDay VARCHAR(25) NOT NULL
+    priceDay DOUBLE NOT NULL
 );
  	
     INSERT INTO tools VALUES ('Saws', 'SAW100', 'Electric chainsaw HUSQVARNA 418EL', 'Battery-powered.
-    Weight: 7,5 kg. Power: 1,8 kW. Capacity: 15 m/s.', 500, '25.00 EUR');
+    Weight: 7,5 kg. Power: 1,8 kW. Capacity: 15 m/s.', 500, 25.00);
     INSERT INTO tools VALUES ('Saws', 'SAW200', 'Circular saw MAKITA GSH03Z', 'Cordless. Voltage: max. 40 V. 
-    Power: 4000 RPM. Weight: 5,5 kg. Blade diam.: 190 mm. Max cutting capacity: 68,5 mm.', 500, '25.00 EUR');
+    Power: 4000 RPM. Weight: 5,5 kg. Blade diam.: 190 mm. Max cutting capacity: 68,5 mm.', 500, 25.00);
     INSERT INTO tools VALUES ('Saws', 'SAW300', 'Industrial table saw Grizzly G1023RLA40', 'Blade size: 35 cm. 
-    Weight: 264 kg. Table dimensions: 123 x 69 cm. Motor: 5 HP', 500, '150.00 EUR');
+    Weight: 264 kg. Table dimensions: 123 x 69 cm. Motor: 5 HP', 500, 150.00);
     INSERT INTO tools VALUES('Drills', 'DRILL1', 'Drilling machine', 'Max diameter 13 mm, Weight 2.5 kg, 
-	Power 18 V', '500', '11.50 EUR'); 
+	Power 18 V', '500', 11.50); 
     INSERT INTO tools VALUES('Drills', 'DRILL2', 'Diamond drill', 'Max diameter 162 mm, Weight 8.2 kg, 
-    Power 2.2 kW', '500', '39.00 EUR'); 
+    Power 2.2 kW', '500', 39.00); 
     INSERT INTO tools VALUES('Drills', 'DRILL3', 'Rotary hammer', 'Max diameter 25 mm, Weight 2.9 kg, 
-    Power 650 W', '500', '11.50 EUR');
+    Power 650 W', '500', 11.50);
     INSERT INTO tools VALUES('Sanders and grinders', 'SL01', 'Bosch Orbit Sander ', 
-    'size 81 x 133, rpm 5000, weight 3.5 kg ', '250', '15.25 EUR');
+    'size 81 x 133, rpm 5000, weight 3.5 kg ', '250', 15.25);
     INSERT INTO tools VALUES('Sanders and grinders', 'SL02', 'Makita Finishing Sander', 
-    'size 75 x 83, rpm 7000, weight 4.4 kg', '250', '19.15 EUR');
+    'size 75 x 83, rpm 7000, weight 4.4 kg', '250', 19.15);
     INSERT INTO tools VALUES('Sanders and grinders', 'SL03', 'Cat SHEET SANDER ', 
-    'size 89 x 123, rpm 10000, weight 3.8 kg ', '250', '8.50 EUR');
+    'size 89 x 123, rpm 10000, weight 3.8 kg ', '250', 8.50);
     INSERT INTO tools VALUES('Meters and canners', 'IRCAM1', 'Infrared camera', 
-    'Power: 12V 2.0Ah, size: 102 x 115 x 231 mm, precision: +/- 2,0°, minimum distance: 3.0 m', 500, '40.00 EUR');
+    'Power: 12V 2.0Ah, size: 102 x 115 x 231 mm, precision: +/- 2,0°, minimum distance: 3.0 m', 500, 40.00);
     INSERT INTO tools VALUES('Meters and scanners','SCAM1', 'Sewer Camera', 'Power: 12V 2.0Ah, diameter: 12.4 mm, 
-    weight: 0.7 kg, display size: 85 mm', 500, '25.00 EUR');
+    weight: 0.7 kg, display size: 85 mm', 500, 25.00);
 	INSERT INTO tools VALUES('Meters and scanners', 'WSCAN1', 'METAL WALL SCANNER', 'Power: 4x1.5V, size: 220 x 97 x 120 mm, 
-    precision: +/- 5 mm, maximum depth: 150 mm', 500, '15.00 EUR');
+    precision: +/- 5 mm, maximum depth: 150 mm', 500, 15.00);
     
 SELECT * FROM tools; 
 
@@ -60,14 +60,12 @@ CREATE TABLE main (
 	nPk int PRIMARY KEY NOT NULL AUTO_INCREMENT,
     toolID varchar(45) NOT NULL REFERENCES tools(id),
     toolName varchar(100) NOT NULL REFERENCES tools(name),
+    available int DEFAULT 1,
+    untilService int NOT NULL REFERENCES serviceHours(tools),
     rented varchar(100) REFERENCES customers(name),
     rentedPIN varchar(45) REFERENCES customers(peronalIDNo),
-    contacts varchar(100) REFERENCES customers(phoneNumber),
-    available int DEFAULT 1,
-    untilService int NOT NULL
+    contacts varchar(100) REFERENCES customers(phoneNumber)
     );
-
-DROP TABLE main;
 
 SELECT * FROM main;
       
@@ -76,4 +74,4 @@ SELECT * FROM main;
 
 
         
-        
+     
