@@ -9,7 +9,7 @@ public class Main {
     public static void main(String[] args) {
         String dbURL = "jdbc:mysql://localhost:3306/java35";
         String username = "root";
-        String password = "";
+        String password = "Arta";
         Scanner scanner = new Scanner(System.in);
         char again = 'y';
 
@@ -33,36 +33,16 @@ public class Main {
                 char action = scanner.nextLine().charAt(0);
 
                 if (action == 'd') {
-
                     insertCustomer(conn, scanner);
 
                 } else if (action == 'c') {
-
                     insertTool(conn, scanner);
 
                 } else if (action == 'e') {
-                    while (true) {
-                        System.out.println("Enter tool ID you want to delete");
-                        String id = scanner.nextLine().toUpperCase(Locale.ROOT).trim();
-                        if (!toolIdExists(conn, id)) {
-                            System.out.println("Tool with ID " + id + " does not exist, try again");
-                        } else {
-                            deleteTool(conn, id);
-                            break;
-                        }
-                    }
+                    deleteTool(conn, scanner);
 
                 } else if (action == 'f') {
-                    while (true) {
-                        System.out.println("Enter customer personal ID No. you want to delete");
-                        String personalIDNo = scanner.nextLine().trim();
-                        if (!personalIdExists(conn, personalIDNo)) {
-                            System.out.println("Customer with personal ID No. " + personalIDNo + " does not exist, try again");
-                        } else {
-                            deleteUser(conn, personalIDNo);
-                            break;
-                        }
-                    }
+                    deleteCustomer(conn, scanner);
 
                 } else if (action == 'a') {
                     readTools(conn);
@@ -169,7 +149,8 @@ public class Main {
         scanner.nextLine();
 
         System.out.println("Enter tool rental price per day");
-        String newToolPrice = scanner.nextLine();
+        double newToolPrice = scanner.nextDouble();
+        scanner.nextLine();
 
         String sql = "INSERT INTO tools (category, ID, name, specifications, serviceHours, priceDay) VALUES (?, ?, ?, ?, ?, ?)";
         PreparedStatement preparedStatement = conn.prepareStatement(sql);
@@ -178,7 +159,7 @@ public class Main {
         preparedStatement.setString(3, newNToolName);
         preparedStatement.setString(4, newToolParameters);
         preparedStatement.setInt(5, newUsageHours);
-        preparedStatement.setString(6, newToolPrice);
+        preparedStatement.setDouble(6, newToolPrice);
 
         int rowInserted = preparedStatement.executeUpdate();
 
@@ -189,7 +170,17 @@ public class Main {
         }
     }
     // metode, lai izdzēstu instrumentu
-    public static void deleteTool(Connection conn, String id) throws SQLException{
+    public static void deleteTool(Connection conn, Scanner scanner) throws SQLException{
+        String id;
+        while (true) {
+            System.out.println("Enter tool ID you want to delete");
+           id = scanner.nextLine().toUpperCase(Locale.ROOT).trim();
+            if (!toolIdExists(conn, id)) {
+                System.out.println("Tool with ID " + id + " does not exist, try again");
+            } else {
+                break;
+            }
+        }
 
         String sql = "DELETE FROM tools WHERE id = ?";
         PreparedStatement preparedStatement = conn.prepareStatement(sql);
@@ -215,7 +206,17 @@ public class Main {
     }
 
     // metode, lai izdzēstu Customer
-    public static void deleteUser(Connection conn, String personalIDNo) throws SQLException{
+    public static void deleteCustomer(Connection conn, Scanner scanner) throws SQLException{
+        String personalIDNo;
+        while (true) {
+            System.out.println("Enter customer personal ID No. you want to delete");
+            personalIDNo = scanner.nextLine().trim();
+            if (!personalIdExists(conn, personalIDNo)) {
+                System.out.println("Customer with personal ID No. " + personalIDNo + " does not exist, try again");
+            } else {
+                break;
+            }
+        }
 
         String sql = "DELETE FROM customers WHERE personalIDNo = ?";
         PreparedStatement preparedStatement = conn.prepareStatement(sql);
