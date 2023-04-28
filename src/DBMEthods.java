@@ -1,87 +1,37 @@
+package tasks;
+
+import javax.swing.*;
 import java.sql.*;
 import java.util.Locale;
 import java.util.Scanner;
 import java.util.regex.Pattern;
-import java.sql.Connection;
-import java.sql.DriverManager;
 
-public class Main {
-    public static void main(String[] args) {
-        String dbURL = "jdbc:mysql://localhost:3306/java35";
-        String username = "root";
-        String password = "";
+
+
+public class DBMEthods {
+
+    public static void logIn() {
         Scanner scanner = new Scanner(System.in);
-        char again = 'y';
+        System.out.print("Enter your email address: ");
+        String email = scanner.nextLine();
+        String[] parts = email.split("@");
+        String username = parts[0];
+        String domain = parts[1];
+        String domain2 = "group2.com";
+        System.out.println("Enter your password: ");
+        String password = scanner.nextLine();
+        int maxLength = 8;
 
-        try (Connection conn = DriverManager.getConnection(dbURL, username, password)) {
-            // Test: to be commented out later
-            System.out.println("Connected to database!");
-
-            while (again == 'y') {
-
-                // šis ir pagaidām, lai varētu pārbaudīt vai lietas strādā
-                System.out.println("Choose one option (a,b,c,d,e,f)");
-                System.out.println("a - reading tools");
-                System.out.println("b - reading available tools and tools with hours till service <=24");
-                System.out.println("c - inserting tools");
-                System.out.println("d - inserting customers");
-                System.out.println("e - deleting tools");
-                System.out.println("f - deleting customer");
-                System.out.println("g - reading customer");
-                System.out.println("h - checking if Customer exists in DB"); // būs jādzēša ārā, jo veidoku, lai tikai pārbaudotu vai darbojas
-
-                char action = scanner.nextLine().charAt(0);
-
-                if (action == 'd') {
-                    insertCustomer(conn, scanner);
-
-                } else if (action == 'c') {
-                    insertTool(conn, scanner);
-
-                } else if (action == 'e') {
-                    deleteTool(conn, scanner);
-
-                } else if (action == 'f') {
-                    deleteCustomer(conn, scanner);
-
-                } else if (action == 'a') {
-                    readTools(conn);
-
-                } else if (action == 'b') {
-                    readAvailableTools(conn);
-
-                } else if (action == 'g') {
-                    readCustomer(conn);
-
-                    // šis būs jāliek citā vietā, if not present in SQL Insert customer
-                }else if (action == 'h') {
-
-                    System.out.println("Enter customers personal ID No.:");
-                    String customerIDNo = scanner.nextLine();
-                    if (!customerExistsInDB(conn, customerIDNo)) {
-                        System.out.println("Customer with personal ID No." + customerIDNo + " don't exists, please input it in DB");
-                        insertCustomer(conn, scanner);
-                    } else {
-                        // dati par Customer ielasās DB main
-                    }
-                }
-
-                System.out.println("Do you want to do something more? y/n");
-                again = scanner.nextLine().charAt(0);
-            }
-
-        } catch (Exception e) {
-            System.out.println(e);
+        while ((domain != domain2) && (password.length() != maxLength)) {
+            System.out.print("Enter your email address: ");
+            email = scanner.nextLine();
+            System.out.println("Enter your password: ");
+            password = scanner.nextLine();
         }
-    }
 
-        /* To be inserted in methods:
-        <<accessmodifier methodname>> (Connection conn) throws SQLException{
-        String sql = "SELECT * FROM <<table customers, tools or main>>";
-            Statement statement = conn.createStatement();
-            ResultSet resultSet = statement.executeQuery(sql);
-            }
-         */
+        System.out.println("You are logged in");
+
+    }
 
     // metode, ar kuru ievada jaunu klientu
     public static void insertCustomer(Connection conn, Scanner scanner) throws SQLException {
@@ -174,7 +124,7 @@ public class Main {
         String id;
         while (true) {
             System.out.println("Enter tool ID you want to delete");
-           id = scanner.nextLine().toUpperCase(Locale.ROOT).trim();
+            id = scanner.nextLine().toUpperCase(Locale.ROOT).trim();
             if (!toolIdExists(conn, id)) {
                 System.out.println("Tool with ID " + id + " does not exist, try again");
             } else {
@@ -195,7 +145,7 @@ public class Main {
 
     // metode ar kuru pārbauda, vai ievadot jaunu instrumenta ID jau tāds neeksistē
     // kā arī ar šo pašu pārbauda, vai dzēšot instrumentu, vispār tāds eksistē
-    private static boolean toolIdExists(Connection conn, String id) throws SQLException {
+    public static boolean toolIdExists(Connection conn, String id) throws SQLException {
         String sql = "SELECT COUNT(*) FROM tools WHERE id = ?";
         PreparedStatement preparedStatement = conn.prepareStatement(sql);
         preparedStatement.setString(1, id);
@@ -211,7 +161,7 @@ public class Main {
         while (true) {
             System.out.println("Enter customer personal ID No. you want to delete");
             personalIDNo = scanner.nextLine().trim();
-            if (!personalIdExists(conn, personalIDNo)) {
+            if (!customerExistsInDB(conn, personalIDNo)) {
                 System.out.println("Customer with personal ID No. " + personalIDNo + " does not exist, try again");
             } else {
                 break;
@@ -230,15 +180,7 @@ public class Main {
     }
 
     // metode ar kuru pārbauda vai Customer tabulā vispar eksistē personal ID No. kuru grib izdzēst
-    private static boolean personalIdExists(Connection conn, String personalIDNo) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM customers WHERE personalIDNo = ?";
-        PreparedStatement preparedStatement = conn.prepareStatement(sql);
-        preparedStatement.setString(1, personalIDNo);
-        ResultSet resultSet = preparedStatement.executeQuery();
-        resultSet.next();
-        int count = resultSet.getInt(1);
-        return count > 0;
-    }
+
 
     // metode, lai parādītu instrumentu tabulu
     public static void readTools(Connection conn) throws SQLException {
@@ -300,8 +242,7 @@ public class Main {
         }
     }
 
-
-    private static boolean customerExistsInDB(Connection conn, String personalIDNo) throws SQLException {
+    public static boolean customerExistsInDB(Connection conn, String personalIDNo) throws SQLException {
         String sql = "SELECT COUNT(*) FROM customers WHERE personalIDNo = ?";
         PreparedStatement preparedStatement = conn.prepareStatement(sql);
         preparedStatement.setString(1, personalIDNo);
@@ -309,6 +250,37 @@ public class Main {
         resultSet.next();
         int count = resultSet.getInt(1);
         return count > 0;
+    }
+
+    public static void returnTool (Connection conn, int timeOfUse,int available, String toolID) throws SQLException {
+        String sql = "UPDATE main SET untilService = untilService - ?, available = ? WHERE nPk = ?";
+        PreparedStatement preparedStatement = conn.prepareStatement(sql);
+        preparedStatement.setInt(1, timeOfUse);
+        preparedStatement.setInt(2, available);
+        preparedStatement.setString(3, toolID);
+
+        if (preparedStatement.executeUpdate() > 0) {
+            System.out.println("return success");
+        } else {
+            System.out.println("smth went wrong");
+        }
+
+    }
+
+    public static void popServiceWin (Connection conn, String toolIDreturn) throws SQLException{
+        String sql = "SELECT untilService FROM main WHERE nPk = ?";
+        PreparedStatement preparedStatement = conn.prepareStatement(sql);
+        preparedStatement.setString(1,toolIDreturn);
+
+        ResultSet resultSet = preparedStatement.executeQuery();
+        resultSet.next();
+        int hours = resultSet.getInt(1);
+
+        if (hours < 25) {
+            JOptionPane.showMessageDialog(null, "Till service less than 24 hours", "Warning", JOptionPane.WARNING_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(null, "Till service " + hours + "hours", "All ok", JOptionPane.INFORMATION_MESSAGE);
+        }
     }
 
 
