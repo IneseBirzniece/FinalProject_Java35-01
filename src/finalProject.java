@@ -3,7 +3,9 @@ import tasks.izmeginajums;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.util.Locale;
 import java.util.Scanner;
+import java.util.regex.Pattern;
 
 public class finalProject {
 
@@ -75,25 +77,41 @@ public class finalProject {
                     }
                 } else if (action == 'i') {
 
-                    izmeginajums.handOut(conn, scanner);
+                    //izmeginajums.handOut(conn, scanner);
+                    DBMEthods.toolIDSearch(conn);
+                    //DBMEthods.calculateRentPrice(conn);
 
                 } else if (action == 'r') {
-                    System.out.println("Enter tool number");
-                    String toolIDreturn = scanner.nextLine();
+                    String newToolID;
+                    while (true) {
+                        System.out.println("Enter tool ID number");
+                        newToolID = scanner.nextLine().toUpperCase(Locale.ROOT).trim();
+
+                        if (!Pattern.matches("[A-Z]{3,5}[0-9]{1,3}", newToolID)) {
+                            System.out.println("Your inputted tool ID number is not valid, try again");
+                        } else if (!DBMEthods.toolIdExists(conn, newToolID)) {
+                            System.out.println("The inputted tool ID don't exists, try again");
+                        } else {
+                            break;// Exit the loop if the input is valid
+                        }
+                    }
+
+
                     System.out.println("Enter worked hours");
                     int toolUsed = scanner.nextInt();
-                    System.out.println("Enter return");
-                    int returnOneZero = scanner.nextInt();
 
 
-                    DBMEthods.returnTool(conn,toolUsed,returnOneZero,toolIDreturn);
-                    DBMEthods.popServiceWin(conn,toolIDreturn);
+                    DBMEthods.returnTool(conn, toolUsed, newToolID);
+                    DBMEthods.popServiceWin(conn,newToolID);
 
+                    izmeginajums.resetHours(conn);
 
                 }
 
+                scanner.nextLine();
                 System.out.println("Do you want to do something more? y/n");
                 again = scanner.nextLine().charAt(0);
+
             }
 
         } catch (Exception e) {

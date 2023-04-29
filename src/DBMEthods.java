@@ -252,14 +252,16 @@ public class DBMEthods {
         return count > 0;
     }
 
-    public static void returnTool (Connection conn, int timeOfUse,int available, String toolID) throws SQLException {
-        String sql = "UPDATE main SET untilService = untilService - ?, available = ? WHERE nPk = ?";
+
+
+    public static void returnTool (Connection conn, int timeOfUse, String toolID ) throws SQLException {
+        String sql = "UPDATE main SET untilService = untilService - ?, available = 1 WHERE toolID = ?";
         PreparedStatement preparedStatement = conn.prepareStatement(sql);
         preparedStatement.setInt(1, timeOfUse);
-        preparedStatement.setInt(2, available);
-        preparedStatement.setString(3, toolID);
+        preparedStatement.setString(2, toolID);
+        int resultSet = preparedStatement.executeUpdate();
 
-        if (preparedStatement.executeUpdate() > 0) {
+        if (resultSet > 0) {
             System.out.println("return success");
         } else {
             System.out.println("smth went wrong");
@@ -267,21 +269,91 @@ public class DBMEthods {
 
     }
 
-    public static void popServiceWin (Connection conn, String toolIDreturn) throws SQLException{
-        String sql = "SELECT untilService FROM main WHERE nPk = ?";
+    public static void popServiceWin (Connection conn, String newToolID) throws SQLException{
+        String sql = "SELECT untilService FROM main WHERE toolID = ?";
         PreparedStatement preparedStatement = conn.prepareStatement(sql);
-        preparedStatement.setString(1,toolIDreturn);
+        preparedStatement.setString(1,newToolID);
 
         ResultSet resultSet = preparedStatement.executeQuery();
-        resultSet.next();
-        int hours = resultSet.getInt(1);
+        int hours;
+        if (resultSet.next()){
+            hours = resultSet.getInt("untilService");
+            if (hours < 25) {
+                System.out.println("Warning!!! Till service less than 24 hours");
 
-        if (hours < 25) {
-            JOptionPane.showMessageDialog(null, "Till service less than 24 hours", "Warning", JOptionPane.WARNING_MESSAGE);
+            } else {
+                System.out.println( "Till service " + hours + "hours. All ok");
+            }
+        }else {
+
+        }
+
+    }
+
+    public static double calculateRentPrice(Connection conn) throws SQLException {
+        Scanner scanner = new Scanner(System.in);
+        String sql = "SELECT priceDay FROM tools WHERE id = ?";
+        PreparedStatement preparedStatement = conn.prepareStatement(sql);
+        System.out.println("Enter tool ID: ");
+        String toolID = scanner.nextLine();
+
+        preparedStatement.setString(1, toolID);
+        ResultSet resultSet = preparedStatement.executeQuery();
+        if (resultSet.next()) {
+            double pricePerDay = resultSet.getDouble("priceDay");
+
+            System.out.println("Enter days for rent: ");
+            int numOfDays = scanner.nextInt();
+
+            double rentPrice = pricePerDay * numOfDays;
+            System.out.println("Rent price is: " + rentPrice);
+            return rentPrice;
         } else {
-            JOptionPane.showMessageDialog(null, "Till service " + hours + "hours", "All ok", JOptionPane.INFORMATION_MESSAGE);
+            System.out.println("Tool not found");
+            return 0.0;
         }
     }
 
+    // Agneses metode
+    public static void toolIDSearch(Connection conn) throws SQLException {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter tool ID:");
+        String toolIDSc = scanner.nextLine().toUpperCase().trim();
+
+        // Salīdzina SQL ar tool ID scanner ievadi. Ja ID atrasts, izdrukā id un name
+        PreparedStatement statement = conn.prepareStatement("SELECT * FROM tools WHERE id = ?");
+        statement.setString(1, toolIDSc);
+        ResultSet resultSet = statement.executeQuery();
+
+        // Pārbauda, vai instruments vispār ir ticis ievadīts main tabulā
+        PreparedStatement everTaken = conn.prepareStatement("SELECT available FROM main WHERE toolID = ?");
+        everTaken.setString(1, toolIDSc);
+        ResultSet resultSet2 = everTaken.executeQuery();
+
+        // Ja instruments ir main tabulā, pārbauda, vai available nav 0
+        PreparedStatement isNowAvailable = conn.prepareStatement("SELECT * FROM main WHERE available <> 0 and toolID = ?");
+        isNowAvailable.setString(1, toolIDSc);
+        ResultSet resultSet3 = isNowAvailable.executeQuery();
+
+        // Pārbauda, vai un kas ir paņēmis instrumentu. Ja ir paņemts, norāda klienta datus
+        PreparedStatement takenBy = conn.prepareStatement("SELECT * FROM main WHERE available = 0 AND toolID = ?");
+        takenBy.setString(1, toolIDSc);
+        ResultSet resultSet4 = takenBy.executeQuery();
+
+
+        if (resultSet.next()) {
+            System.out.println("ID: " + resultSet.getString(2) + "\t Name: " + resultSet.getString(3));
+            if (!resultSet2.next() || resultSet3.next()) {
+                System.out.println("Tool is available");
+
+
+            } else if (resultSet4.next()) {
+                System.out.println("Handed out to:\n"
+                        + resultSet4.getString(6) + ", " + resultSet4.getString(7) + ", " + resultSet4.getString(8));
+            }
+        } else {
+            System.out.println("ID does not exist");
+        }
+    }
 
 }
