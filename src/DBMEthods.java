@@ -79,7 +79,7 @@ public class DBMEthods {
             System.out.println("Enter tool ID, that contains 3-5 letters and 1-3 numbers");
             newToolID = scanner.nextLine().toUpperCase(Locale.ROOT).trim();
 
-            if (!Pattern.matches("[A-Z]{3,5}[0-9]{1,3}", newToolID)) {
+            if (!Pattern.matches("[A-Z]{2,5}[0-9]{1,3}", newToolID)) {
                 System.out.println("Your inputted tool ID number is not valid, try again");
             } else if (toolIdExists(conn, newToolID)) {
                 System.out.println("The inputted tool ID already exists, try again");
@@ -254,14 +254,21 @@ public class DBMEthods {
 
 
 
-    public static void returnTool (Connection conn, int timeOfUse, String toolID ) throws SQLException {
-        String sql = "UPDATE main SET untilService = untilService - ?, available = 1 WHERE toolID = ?";
+    public static void returnTool (Connection conn, int timeOfUse, String newToolID ) throws SQLException {
+        String sql = "UPDATE main SET untilService = untilService - ?, available = 1 WHERE toolID = ? AND available = 0";
         PreparedStatement preparedStatement = conn.prepareStatement(sql);
         preparedStatement.setInt(1, timeOfUse);
-        preparedStatement.setString(2, toolID);
+        preparedStatement.setString(2, newToolID);
         int resultSet = preparedStatement.executeUpdate();
 
-        if (resultSet > 0) {
+        // Pārbauda, vai instruments vispār ir ticis ievadīts main tabulā
+        PreparedStatement everTaken = conn.prepareStatement("SELECT available FROM main WHERE toolID = ?");
+        everTaken.setString(1, newToolID);
+        ResultSet resultSet2 = everTaken.executeQuery();
+
+        if (resultSet2.next()) {
+            System.out.println("Error! Tool has already been returned");
+        } else if (resultSet > 0) {
             System.out.println("return success");
         } else {
             System.out.println("smth went wrong");
@@ -269,26 +276,39 @@ public class DBMEthods {
 
     }
 
-    public static void popServiceWin (Connection conn, String newToolID) throws SQLException{
+    public static void hoursTillService (Connection conn, String newToolID, Scanner scanner) throws SQLException {
         String sql = "SELECT untilService FROM main WHERE toolID = ?";
         PreparedStatement preparedStatement = conn.prepareStatement(sql);
-        preparedStatement.setString(1,newToolID);
+        preparedStatement.setString(1, newToolID);
 
         ResultSet resultSet = preparedStatement.executeQuery();
         int hours;
-        if (resultSet.next()){
+        if (resultSet.next()) {
             hours = resultSet.getInt("untilService");
-            if (hours < 25) {
-                System.out.println("Warning!!! Till service less than 24 hours");
+            if (hours < 24) {
+                System.out.println("Warning!!! Till service less than 24 hours.");
+                System.out.println("Send to service now? y/n");
+                char confirm = scanner.nextLine().charAt(0);
+                scanner.nextLine();
 
+                while (confirm == 'y') {
+
+                    PreparedStatement toolReset = conn.prepareStatement("UPDATE main SET untilService = 500 WHERE toolID = ?");
+                    toolReset.setString(1, newToolID);
+                    if (toolReset.executeUpdate() > 0) {
+                        System.out.printf("Service hours for the tool have been reset to 500");
+                    } else {
+                        System.out.println("Resetting service hours failed");
+                    }
+                }
             } else {
-                System.out.println( "Till service " + hours + "hours. All ok");
+                System.out.println("Till service " + hours + " hours. All ok");
             }
-        }else {
+        } else {
 
         }
-
     }
+
 
     public static double calculateRentPrice(Connection conn) throws SQLException {
         Scanner scanner = new Scanner(System.in);
@@ -319,6 +339,11 @@ public class DBMEthods {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Enter tool ID:");
         String toolIDSc = scanner.nextLine().toUpperCase().trim();
+        while ((!Pattern.matches("[A-Z]{2,5}[0-9]{1,3}", toolIDSc))){
+            System.out.println("Your inputted tool ID number is not valid, try again");
+            System.out.println("Enter tool ID");
+            toolIDSc = scanner.nextLine().toUpperCase().trim();
+        }
 
         // Salīdzina SQL ar tool ID scanner ievadi. Ja ID atrasts, izdrukā id un name
         PreparedStatement statement = conn.prepareStatement("SELECT * FROM tools WHERE id = ?");
@@ -341,11 +366,24 @@ public class DBMEthods {
         ResultSet resultSet4 = takenBy.executeQuery();
 
 
+
+
         if (resultSet.next()) {
             System.out.println("ID: " + resultSet.getString(2) + "\t Name: " + resultSet.getString(3));
             if (!resultSet2.next() || resultSet3.next()) {
                 System.out.println("Tool is available");
+                updateMain(conn);
+                // Pārbauda, vai instruments vispār ir ticis ievadīts main tabulā
+                PreparedStatement inMain = conn.prepareStatement("SELECT toolID FROM main WHERE toolID = ?");
+                inMain.setString(1, toolIDSc);
+                ResultSet resultSet5 = inMain.executeQuery();
 
+
+                if(!resultSet5.next()){
+                    PreparedStatement updateService = conn.prepareStatement("UPDATE main SET untilService = 500 WHERE toolID = ?");
+                    updateService.setString(1, toolIDSc);
+                    updateService.executeUpdate();
+                }
 
             } else if (resultSet4.next()) {
                 System.out.println("Handed out to:\n"
@@ -355,5 +393,48 @@ public class DBMEthods {
             System.out.println("ID does not exist");
         }
     }
+    public static void updateMain(Connection conn) throws SQLException {
+        Scanner scanner = new Scanner(System.in);
+        String toolIDSc;
+        System.out.println("Confirm tool ID");
+        toolIDSc = scanner.nextLine().toUpperCase().trim();
+        while ((!Pattern.matches("[A-Z]{2,5}[0-9]{1,3}", toolIDSc))){
+            System.out.println("Your inputted tool ID number is not valid, try again");
+            System.out.println("Confirm tool ID");
+            toolIDSc = scanner.nextLine().toUpperCase().trim();
+        }
+
+        PreparedStatement statement = conn.prepareStatement("SELECT * FROM tools WHERE id = ?");
+        statement.setString(1, toolIDSc);
+        ResultSet resultSet = statement.executeQuery();
+
+        if (resultSet.next()) {
+            PreparedStatement updateTools = conn.prepareStatement("INSERT INTO main (toolID, toolName) SELECT id, name FROM tools WHERE id = ?");
+            updateTools.setString(1, toolIDSc);
+            updateTools.executeUpdate();
+        }
+
+        System.out.println("Enter customer ID:");
+        String personalIDNo = scanner.nextLine().trim();
+
+        PreparedStatement checkCustomer = conn.prepareStatement("SELECT * FROM customers WHERE personalIDNo = ?");
+        checkCustomer.setString(1, personalIDNo);
+        ResultSet customerResultSet = checkCustomer.executeQuery();
+
+        if (customerResultSet.next()) {
+            PreparedStatement updateMain = conn.prepareStatement("UPDATE main SET available = 0, rented = ?, rentedPIN = ?,  contacts = ? WHERE toolID = ?");
+            updateMain.setString(1, customerResultSet.getString("name"));
+            updateMain.setString(2, personalIDNo);
+            updateMain.setString(3, customerResultSet.getString("phoneNumber"));
+            updateMain.setString(4, toolIDSc);
+            updateMain.executeUpdate();
+            System.out.println("Main table updated successfully!");
+        } else {
+            System.out.println("Customer not found!");
+            System.out.println("atgriezties main, lai meginatu velreiz vai ari ievadit jaunu customer");
+
+        }
+    }
+
 
 }

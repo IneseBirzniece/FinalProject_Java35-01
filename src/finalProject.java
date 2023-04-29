@@ -41,7 +41,7 @@ public class finalProject {
                 System.out.println("i - hand out");
                 System.out.println("r - return");
 
-                char action = scanner.nextLine().charAt(0);
+                char action = scanner.nextLine().toLowerCase().charAt(0);
 
                 if (action == 'd') {
                     DBMEthods.insertCustomer(conn, scanner);
@@ -77,9 +77,9 @@ public class finalProject {
                     }
                 } else if (action == 'i') {
 
-                    //izmeginajums.handOut(conn, scanner);
                     DBMEthods.toolIDSearch(conn);
-                    //DBMEthods.calculateRentPrice(conn);
+                    System.out.println("Lets calculate the price");
+                    DBMEthods.calculateRentPrice(conn);
 
                 } else if (action == 'r') {
                     String newToolID;
@@ -99,18 +99,20 @@ public class finalProject {
 
                     System.out.println("Enter worked hours");
                     int toolUsed = scanner.nextInt();
-
+                    scanner.nextLine();
 
                     DBMEthods.returnTool(conn, toolUsed, newToolID);
-                    DBMEthods.popServiceWin(conn,newToolID);
 
-                    izmeginajums.resetHours(conn);
+                    DBMEthods.hoursTillService(conn,newToolID, scanner);
+
+                    //izmeginajums.resetHours(conn);
 
                 }
 
-                scanner.nextLine();
+
                 System.out.println("Do you want to do something more? y/n");
-                again = scanner.nextLine().charAt(0);
+                again = scanner.nextLine().toLowerCase().charAt(0);
+
 
             }
 
