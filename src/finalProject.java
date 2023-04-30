@@ -37,7 +37,6 @@ public class finalProject {
                 System.out.println("e - deleting tools");
                 System.out.println("f - deleting customer");
                 System.out.println("g - reading customer");
-                System.out.println("h - checking if Customer exists in DB"); // būs jādzēša ārā, jo veidoku, lai tikai pārbaudotu vai darbojas
                 System.out.println("i - hand out");
                 System.out.println("r - return");
 
@@ -64,49 +63,11 @@ public class finalProject {
                 } else if (action == 'g') {
                     DBMEthods.readCustomer(conn);
 
-                    // šis būs jāliek citā vietā, if not present in SQL Insert customer
-                }else if (action == 'h') {
-
-                    System.out.println("Enter customers personal ID No.:");
-                    String customerIDNo = scanner.nextLine();
-                    if (!DBMEthods.customerExistsInDB(conn, customerIDNo)) {
-                        System.out.println("Customer with personal ID No." + customerIDNo + " don't exists, please input it in DB");
-                        DBMEthods.insertCustomer(conn, scanner);
-                    } else {
-                        // dati par Customer ielasās DB main
-                    }
                 } else if (action == 'i') {
-
                     DBMEthods.toolIDSearch(conn);
-                    System.out.println("Lets calculate the price");
-                    DBMEthods.calculateRentPrice(conn);
 
                 } else if (action == 'r') {
-                    String newToolID;
-                    while (true) {
-                        System.out.println("Enter tool ID number");
-                        newToolID = scanner.nextLine().toUpperCase(Locale.ROOT).trim();
-
-                        if (!Pattern.matches("[A-Z]{3,5}[0-9]{1,3}", newToolID)) {
-                            System.out.println("Your inputted tool ID number is not valid, try again");
-                        } else if (!DBMEthods.toolIdExists(conn, newToolID)) {
-                            System.out.println("The inputted tool ID don't exists, try again");
-                        } else {
-                            break;// Exit the loop if the input is valid
-                        }
-                    }
-
-
-                    System.out.println("Enter worked hours");
-                    int toolUsed = scanner.nextInt();
-                    scanner.nextLine();
-
-                    DBMEthods.returnTool(conn, toolUsed, newToolID);
-
-                    DBMEthods.hoursTillService(conn,newToolID, scanner);
-
-                    //izmeginajums.resetHours(conn);
-
+                    DBMEthods.returnTool(conn, scanner);
                 }
 
 

@@ -7,7 +7,6 @@ import java.util.Scanner;
 import java.util.regex.Pattern;
 
 
-
 public class DBMEthods {
 
     public static void logIn() {
@@ -254,12 +253,20 @@ public class DBMEthods {
 
 
 
-    public static void returnTool (Connection conn, int timeOfUse, String newToolID ) throws SQLException {
-        String sql = "UPDATE main SET untilService = untilService - ?, available = 1 WHERE toolID = ? AND available = 0";
-        PreparedStatement preparedStatement = conn.prepareStatement(sql);
-        preparedStatement.setInt(1, timeOfUse);
-        preparedStatement.setString(2, newToolID);
-        int resultSet = preparedStatement.executeUpdate();
+    public static void returnTool (Connection conn, Scanner scanner ) throws SQLException {
+        String newToolID;
+        while (true) {
+            System.out.println("Enter tool ID number");
+            newToolID = scanner.nextLine().toUpperCase(Locale.ROOT).trim();
+
+            if (!Pattern.matches("[A-Z]{2,5}[0-9]{1,3}", newToolID)) {
+                System.out.println("Your inputted tool ID number is not valid, try again");
+            } else if (!DBMEthods.toolIdExists(conn, newToolID)) {
+                System.out.println("The inputted tool ID don't exists, try again");
+            } else {
+                break;// Exit the loop if the input is valid
+            }
+        }
 
         // Pārbauda, vai instruments vispār ir ticis ievadīts main tabulā
         PreparedStatement everTaken = conn.prepareStatement("SELECT available FROM main WHERE toolID = ?");
@@ -267,11 +274,27 @@ public class DBMEthods {
         ResultSet resultSet2 = everTaken.executeQuery();
 
         if (resultSet2.next()) {
-            System.out.println("Error! Tool has already been returned");
-        } else if (resultSet > 0) {
-            System.out.println("return success");
+            int available = resultSet2.getInt("available");
+            if (available == 1) {
+                System.out.println("Error! Tool has already been returned");
+                return;
+            }
+        }
+        System.out.println("Enter worked hours");
+        int timeOfUse = scanner.nextInt();
+        scanner.nextLine();
+
+        String sql = "UPDATE main SET untilService = untilService - ?, available = 1 WHERE toolID = ? AND available = 0";
+        PreparedStatement preparedStatement = conn.prepareStatement(sql);
+        preparedStatement.setInt(1, timeOfUse);
+        preparedStatement.setString(2, newToolID);
+        int resultSet = preparedStatement.executeUpdate();
+
+        if (resultSet > 0) {
+            System.out.println("Return successful");
+            hoursTillService(conn, newToolID, scanner);
         } else {
-            System.out.println("smth went wrong");
+            System.out.println("Something went wrong");
         }
 
     }
@@ -289,17 +312,17 @@ public class DBMEthods {
                 System.out.println("Warning!!! Till service less than 24 hours.");
                 System.out.println("Send to service now? y/n");
                 char confirm = scanner.nextLine().charAt(0);
-                scanner.nextLine();
 
                 while (confirm == 'y') {
 
                     PreparedStatement toolReset = conn.prepareStatement("UPDATE main SET untilService = 500 WHERE toolID = ?");
                     toolReset.setString(1, newToolID);
                     if (toolReset.executeUpdate() > 0) {
-                        System.out.printf("Service hours for the tool have been reset to 500");
+                        System.out.println("Service hours for the tool have been reset to 500");
+
                     } else {
                         System.out.println("Resetting service hours failed");
-                    }
+                    }break;
                 }
             } else {
                 System.out.println("Till service " + hours + " hours. All ok");
@@ -391,6 +414,7 @@ public class DBMEthods {
             }
         } else {
             System.out.println("ID does not exist");
+            toolIDSearch(conn);
         }
     }
     public static void updateMain(Connection conn) throws SQLException {
@@ -429,9 +453,24 @@ public class DBMEthods {
             updateMain.setString(4, toolIDSc);
             updateMain.executeUpdate();
             System.out.println("Main table updated successfully!");
+            System.out.println("Lets calculate the price");
+            DBMEthods.calculateRentPrice(conn);
         } else {
             System.out.println("Customer not found!");
-            System.out.println("atgriezties main, lai meginatu velreiz vai ari ievadit jaunu customer");
+            System.out.println("Enter 1 to insert new customer, or 2 to try again to gain out tool:");
+            String choice = scanner.nextLine().trim();
+
+            if (choice.equals("1")) {
+                insertCustomer(conn, scanner);
+            } else if (choice.equals("2")) {
+                toolIDSearch(conn);
+                updateMain(conn);
+            } else {
+                System.out.println("Invalid input. Returning to main menu...");
+                return;
+            }
+
+
 
         }
     }

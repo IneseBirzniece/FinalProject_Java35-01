@@ -7,9 +7,6 @@ import java.util.Scanner;
 public class izmeginajums {
 
 
-
-
-
     public static void resetHours(Connection conn) throws SQLException {
         Scanner scanner = new Scanner(System.in);
         String sql = "SELECT * FROM main WHERE untilService <20";
