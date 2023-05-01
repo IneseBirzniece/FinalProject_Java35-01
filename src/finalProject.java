@@ -20,74 +20,94 @@ public class finalProject {
         char again = 'y';
 
         try (Connection conn = DriverManager.getConnection(dbURL, username, password)) {
-            // Test: to be commented out later
             System.out.println("Connected to database!");
 
-
-
-
             while (again == 'y') {
+                System.out.println("Choose one option (a,b,c,d,e,q)");
 
-                // šis ir pagaidām, lai varētu pārbaudīt vai lietas strādā
-                System.out.println("Choose one option (a,b,c,d,e,f)");
-                System.out.println("a - reading tools");
-                System.out.println("b - reading available tools and tools with hours till service <=24");
-                System.out.println("c - inserting tools");
-                System.out.println("d - inserting customers");
-                System.out.println("e - deleting tools");
-                System.out.println("f - deleting customer");
-                System.out.println("g - reading customer");
-                System.out.println("i - hand out");
-                System.out.println("r - return");
-
-                char action = scanner.nextLine().toLowerCase().charAt(0);
-
-                if (action == 'd') {
-                    DBMEthods.insertCustomer(conn, scanner);
-
-                } else if (action == 'c') {
-                    DBMEthods.insertTool(conn, scanner);
-
-                } else if (action == 'e') {
-                    DBMEthods.deleteTool(conn, scanner);
-
-                } else if (action == 'f') {
-                    DBMEthods.deleteCustomer(conn, scanner);
-
-                } else if (action == 'a') {
-                    DBMEthods.readTools(conn);
-
-                } else if (action == 'b') {
-                    DBMEthods.readAvailableTools(conn);
-
-                } else if (action == 'g') {
-                    DBMEthods.readCustomer(conn);
-
-                } else if (action == 'i') {
-                    DBMEthods.toolIDSearch(conn);
-
-                } else if (action == 'r') {
-                    DBMEthods.returnTool(conn, scanner);
+                System.out.println("a - hand out tool");
+                System.out.println("b - return tool");
+                System.out.println("c - reading available tools and tools with hours till service >=24h ");
+                System.out.println("d - actions with tools DB");
+                System.out.println("e - actions with customers DB");
+                System.out.println("q - quit");
+                char action = scanner.nextLine().toLowerCase().trim().charAt(0);
+                switch(action){
+                    case 'a':
+                        DBMEthods.toolIDSearch(conn);
+                        break;
+                    case 'b':
+                        DBMEthods.returnTool(conn, scanner);
+                        break;
+                    case 'c':
+                        DBMEthods.readAvailableTools(conn);
+                        break;
+                    case 'd':
+                        System.out.println("Choose one option (f,g,h)");
+                        System.out.println("f - reading tools");
+                        System.out.println("g - inserting tools");
+                        System.out.println("h - deleting tool");
+                        char action2 = scanner.nextLine().toLowerCase().charAt(0);
+                         switch(action2){
+                             case 'f':
+                                 DBMEthods.readTools(conn);
+                                 break;
+                             case 'g':
+                                 DBMEthods.insertTool(conn, scanner);
+                                 break;
+                             case 'h':
+                                 DBMEthods.deleteTool(conn, scanner);
+                                 break;
+                             default:
+                                 System.out.println("Invalid option. Please try again.");
+                                 break;
+                         }
+                         System.out.println("Do you want to do something more? y/n");
+                         again = scanner.nextLine().toLowerCase().charAt(0);
+                        if (again == 'n'){
+                            System.out.println("Goodbye!");
+                        }
+                        break;
+                    case 'e':
+                        System.out.println("Choose one option (i,j,k)");
+                        System.out.println("i - reading customers");
+                        System.out.println("j - inserting customers");
+                        System.out.println("k - deleting customer");
+                        char action3 = scanner.nextLine().toLowerCase().charAt(0);
+                        switch(action3){
+                            case 'i':
+                                DBMEthods.readCustomer(conn);
+                                break;
+                            case 'j':
+                                DBMEthods.insertCustomer(conn, scanner);
+                                break;
+                            case 'k':
+                                DBMEthods.deleteCustomer(conn, scanner);
+                                break;
+                            default:
+                                System.out.println("Invalid option. Please try again.");
+                                break;
+                        }
+                        System.out.println("Do you want to do something more? y/n");
+                        again = scanner.nextLine().toLowerCase().charAt(0);
+                        if (again == 'n'){
+                            System.out.println("Goodbye!");
+                        }
+                        break;
+                    case 'q':
+                        System.out.println("Goodbye!");
+                        return;
+                    default:
+                        System.out.println("Invalid option. Please try again.");
+                        break;
                 }
 
-
-                System.out.println("Do you want to do something more? y/n");
-                again = scanner.nextLine().toLowerCase().charAt(0);
-
-
             }
+            conn.close();
 
         } catch (Exception e) {
             System.out.println(e);
         }
     }
-
-        /*To be inserted in methods:
-        <<accessmodifier methodname>> (Connection conn) throws SQLException{
-        String sql = "SELECT * FROM <<table customers, tools or main>>";
-            Statement statement = conn.createStatement();
-            ResultSet resultSet = statement.executeQuery(sql);
-            }
-         */
 
 }
