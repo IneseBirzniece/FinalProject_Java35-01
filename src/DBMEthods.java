@@ -299,6 +299,8 @@ public class DBMEthods {
 
     }
 
+
+
     public static void hoursTillService (Connection conn, String newToolID, Scanner scanner) throws SQLException {
         String sql = "SELECT untilService FROM main WHERE toolID = ?";
         PreparedStatement preparedStatement = conn.prepareStatement(sql);
@@ -389,8 +391,6 @@ public class DBMEthods {
         ResultSet resultSet4 = takenBy.executeQuery();
 
 
-
-
         if (resultSet.next()) {
             System.out.println("ID: " + resultSet.getString(2) + "\t Name: " + resultSet.getString(3));
             if (!resultSet2.next() || resultSet3.next()) {
@@ -446,6 +446,7 @@ public class DBMEthods {
         ResultSet customerResultSet = checkCustomer.executeQuery();
 
         if (customerResultSet.next()) {
+            //PreparedStatement updateMain = conn.prepareStatement("UPDATE main SET available = 0, rented = ?, rentedPIN = ?,  contacts = ?, untilService = IFNULL(untilService, 500) WHERE toolID = ?");
             PreparedStatement updateMain = conn.prepareStatement("UPDATE main SET available = 0, rented = ?, rentedPIN = ?,  contacts = ? WHERE toolID = ?");
             updateMain.setString(1, customerResultSet.getString("name"));
             updateMain.setString(2, personalIDNo);
@@ -461,10 +462,10 @@ public class DBMEthods {
             String choice = scanner.nextLine().trim();
 
             if (choice.equals("1")) {
+
                 insertCustomer(conn, scanner);
             } else if (choice.equals("2")) {
                 toolIDSearch(conn);
-                updateMain(conn);
             } else {
                 System.out.println("Invalid input. Returning to main menu...");
                 return;
