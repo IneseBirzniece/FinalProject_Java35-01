@@ -1,13 +1,13 @@
 package tasks;
 
-import javax.swing.*;
 import java.sql.*;
 import java.util.Locale;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
 
-public class DBMEthods {
+public class MethodsToolRentalApp {
+    private String toolIDSc;
 
     public static void logIn() {
         Scanner scanner = new Scanner(System.in);
@@ -33,7 +33,7 @@ public class DBMEthods {
     }
 
     // metode, ar kuru ievada jaunu klientu
-    public static void insertCustomer(Connection conn, Scanner scanner) throws SQLException {
+    public static void insertCustomerInDb(Connection conn, Scanner scanner) throws SQLException {
         System.out.println("Enter customers name and surname");
         String newName = scanner.nextLine();
 
@@ -69,7 +69,7 @@ public class DBMEthods {
 
     // metode, ar kuru tiek ievadīts jauns instruments
     // !!! nestrādā pēdējais apgalvojums par priceDay
-    public static void insertTool(Connection conn, Scanner scanner) throws SQLException {
+    public static void insertToolInDb(Connection conn, Scanner scanner) throws SQLException {
         System.out.println("Enter tool category");
         String newToolCategory = scanner.nextLine();
 
@@ -80,7 +80,7 @@ public class DBMEthods {
 
             if (!Pattern.matches("[A-Z]{2,5}[0-9]{1,3}", newToolID)) {
                 System.out.println("Your inputted tool ID number is not valid, try again");
-            } else if (toolIdExists(conn, newToolID)) {
+            } else if (checkIfToolIdExists(conn, newToolID)) {
                 System.out.println("The inputted tool ID already exists, try again");
             } else {
                 break;// Exit the loop if the input is valid
@@ -119,12 +119,12 @@ public class DBMEthods {
         }
     }
     // metode, lai izdzēstu instrumentu
-    public static void deleteTool(Connection conn, Scanner scanner) throws SQLException{
+    public static void deleteToolFromDb(Connection conn, Scanner scanner) throws SQLException{
         String id;
         while (true) {
             System.out.println("Enter tool ID you want to delete");
             id = scanner.nextLine().toUpperCase(Locale.ROOT).trim();
-            if (!toolIdExists(conn, id)) {
+            if (!checkIfToolIdExists(conn, id)) {
                 System.out.println("Tool with ID " + id + " does not exist, try again");
             } else {
                 break;
@@ -144,7 +144,7 @@ public class DBMEthods {
 
     // metode ar kuru pārbauda, vai ievadot jaunu instrumenta ID jau tāds neeksistē
     // kā arī ar šo pašu pārbauda, vai dzēšot instrumentu, vispār tāds eksistē
-    public static boolean toolIdExists(Connection conn, String id) throws SQLException {
+    public static boolean checkIfToolIdExists(Connection conn, String id) throws SQLException {
         String sql = "SELECT COUNT(*) FROM tools WHERE id = ?";
         PreparedStatement preparedStatement = conn.prepareStatement(sql);
         preparedStatement.setString(1, id);
@@ -155,12 +155,12 @@ public class DBMEthods {
     }
 
     // metode, lai izdzēstu Customer
-    public static void deleteCustomer(Connection conn, Scanner scanner) throws SQLException{
+    public static void deleteCustomerFromDb(Connection conn, Scanner scanner) throws SQLException{
         String personalIDNo;
         while (true) {
             System.out.println("Enter customer personal ID No. you want to delete");
             personalIDNo = scanner.nextLine().trim();
-            if (!customerExistsInDB(conn, personalIDNo)) {
+            if (!checkIfCustomerIdExistsInDB(conn, personalIDNo)) {
                 System.out.println("Customer with personal ID No. " + personalIDNo + " does not exist, try again");
             } else {
                 break;
@@ -180,9 +180,8 @@ public class DBMEthods {
 
     // metode ar kuru pārbauda vai Customer tabulā vispar eksistē personal ID No. kuru grib izdzēst
 
-
     // metode, lai parādītu instrumentu tabulu
-    public static void readTools(Connection conn) throws SQLException {
+    public static void readToolsFromDb(Connection conn) throws SQLException {
 
         String sql = "SELECT * FROM tools";
         Statement statement = conn.createStatement();
@@ -201,7 +200,7 @@ public class DBMEthods {
         }
 
     }
-    public static void readCustomer(Connection conn) throws SQLException {
+    public static void readCustomerFromDb(Connection conn) throws SQLException {
 
         String sql = "SELECT * FROM customers";
         Statement statement = conn.createStatement();
@@ -241,7 +240,7 @@ public class DBMEthods {
         }
     }
 
-    public static boolean customerExistsInDB(Connection conn, String personalIDNo) throws SQLException {
+    public static boolean checkIfCustomerIdExistsInDB(Connection conn, String personalIDNo) throws SQLException {
         String sql = "SELECT COUNT(*) FROM customers WHERE personalIDNo = ?";
         PreparedStatement preparedStatement = conn.prepareStatement(sql);
         preparedStatement.setString(1, personalIDNo);
@@ -251,9 +250,7 @@ public class DBMEthods {
         return count > 0;
     }
 
-
-
-    public static void returnTool (Connection conn, Scanner scanner ) throws SQLException {
+    public static void returnTool(Connection conn, Scanner scanner ) throws SQLException {
         String newToolID;
         while (true) {
             System.out.println("Enter tool ID number");
@@ -261,7 +258,7 @@ public class DBMEthods {
 
             if (!Pattern.matches("[A-Z]{2,5}[0-9]{1,3}", newToolID)) {
                 System.out.println("Your inputted tool ID number is not valid, try again");
-            } else if (!DBMEthods.toolIdExists(conn, newToolID)) {
+            } else if (!tasks.MethodsToolRentalApp.checkIfToolIdExists(conn, newToolID)) {
                 System.out.println("The inputted tool ID don't exists, try again");
             } else {
                 break;// Exit the loop if the input is valid
@@ -299,9 +296,7 @@ public class DBMEthods {
 
     }
 
-
-
-    public static void hoursTillService (Connection conn, String newToolID, Scanner scanner) throws SQLException {
+    public static void hoursTillService(Connection conn, String newToolID, Scanner scanner) throws SQLException {
         String sql = "SELECT untilService FROM main WHERE toolID = ?";
         PreparedStatement preparedStatement = conn.prepareStatement(sql);
         preparedStatement.setString(1, newToolID);
@@ -334,7 +329,6 @@ public class DBMEthods {
         }
     }
 
-
     public static double calculateRentPrice(Connection conn) throws SQLException {
         Scanner scanner = new Scanner(System.in);
         String sql = "SELECT priceDay FROM tools WHERE id = ?";
@@ -350,6 +344,12 @@ public class DBMEthods {
             System.out.println("Enter days for rent: ");
             int numOfDays = scanner.nextInt();
 
+// Pievienoju validāciju dienu skaitam, citādi, ja ievada ko nepareizu, cenu neaprēķina, parāda Tool not found, bet main tabulu updeito
+            while (numOfDays < 1) {
+                System.out.println("The inputted number of days is not valid, try again");
+                System.out.println("Enter days for rent: ");
+                numOfDays = scanner.nextInt();
+            }
             double rentPrice = pricePerDay * numOfDays;
             System.out.println("Rent price is: " + rentPrice);
             return rentPrice;
@@ -364,7 +364,7 @@ public class DBMEthods {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Enter tool ID:");
         String toolIDSc = scanner.nextLine().toUpperCase().trim();
-        while ((!Pattern.matches("[A-Z]{2,5}[0-9]{1,3}", toolIDSc))){
+        while ((!Pattern.matches("[A-Z]{2,5}[0-9]{1,3}", toolIDSc))) {
             System.out.println("Your inputted tool ID number is not valid, try again");
             System.out.println("Enter tool ID");
             toolIDSc = scanner.nextLine().toUpperCase().trim();
@@ -395,18 +395,8 @@ public class DBMEthods {
             System.out.println("ID: " + resultSet.getString(2) + "\t Name: " + resultSet.getString(3));
             if (!resultSet2.next() || resultSet3.next()) {
                 System.out.println("Tool is available");
-                updateMain(conn);
+                updateMainDb(conn);
                 // Pārbauda, vai instruments vispār ir ticis ievadīts main tabulā
-                PreparedStatement inMain = conn.prepareStatement("SELECT toolID FROM main WHERE toolID = ?");
-                inMain.setString(1, toolIDSc);
-                ResultSet resultSet5 = inMain.executeQuery();
-
-
-                if(!resultSet5.next()){
-                    PreparedStatement updateService = conn.prepareStatement("UPDATE main SET untilService = 500 WHERE toolID = ?");
-                    updateService.setString(1, toolIDSc);
-                    updateService.executeUpdate();
-                }
 
             } else if (resultSet4.next()) {
                 System.out.println("Handed out to:\n"
@@ -417,12 +407,11 @@ public class DBMEthods {
             toolIDSearch(conn);
         }
     }
-    public static void updateMain(Connection conn) throws SQLException {
+    public static void updateMainDb(Connection conn) throws SQLException {
         Scanner scanner = new Scanner(System.in);
-        String toolIDSc;
         System.out.println("Confirm tool ID");
-        toolIDSc = scanner.nextLine().toUpperCase().trim();
-        while ((!Pattern.matches("[A-Z]{2,5}[0-9]{1,3}", toolIDSc))){
+        String toolIDSc = scanner.nextLine().toUpperCase().trim();
+        while ((!Pattern.matches("[A-Z]{2,5}[0-9]{1,3}", toolIDSc))) {
             System.out.println("Your inputted tool ID number is not valid, try again");
             System.out.println("Confirm tool ID");
             toolIDSc = scanner.nextLine().toUpperCase().trim();
@@ -438,6 +427,42 @@ public class DBMEthods {
             updateTools.executeUpdate();
         }
 
+// Jauna koda daļa: pārbauda, cik reižu instruments ierakstīts main tabulā kā pieejams
+        PreparedStatement serviceCheck = conn.prepareStatement("SELECT * FROM main WHERE available = 1 AND toolID = ?");
+        serviceCheck.setString(1, toolIDSc);
+        ResultSet resultSet5 = serviceCheck.executeQuery();
+
+        int count = 0;
+        while (resultSet5.next()){
+            count++;
+        }
+
+        // Ja tikai vienu reizi, Java paņem sākuma vērtību 500 un izmanto to turpmākiem aprēķiniem
+        if(count == 1){
+            PreparedStatement checkService = conn.prepareStatement("UPDATE main SET untilService = 500 WHERE toolID = ?");
+            checkService.setString(1, toolIDSc);
+            checkService.executeUpdate();
+            // Ja vairākas reizes, Java paņem vērtību no iepriekšējās rindas, kas attiecas uz konkrēto toolID
+            // Nav ideāli, bet strādā - katru reizi atjaunojas visa kolonna, nevar apskatīties, cik h katrs klients lietojis
+            // Bet visu rēķina pareizi, arī pēc service reset atjaunojas uz 500 h
+
+        } else if(count > 1){
+            PreparedStatement isCheckService = conn.prepareStatement("UPDATE main\n" +
+                    "SET untilService = (\n" +
+                    "    SELECT untilService\n" +
+                    "    FROM (\n" +
+                    "        SELECT untilService\n" +
+                    "        FROM main\n" +
+                    "        WHERE nPk = (SELECT MAX(nPk) FROM main WHERE untilService IS NOT NULL AND toolID = ?)\n" +
+                    "       ) AS subquery\n" +
+                    ")\n" +
+                    "WHERE toolID = ?");
+
+            isCheckService.setString(1, toolIDSc);
+            isCheckService.setString(2, toolIDSc);
+            isCheckService.executeUpdate();
+        }
+
         System.out.println("Enter customer ID:");
         String personalIDNo = scanner.nextLine().trim();
 
@@ -446,31 +471,32 @@ public class DBMEthods {
         ResultSet customerResultSet = checkCustomer.executeQuery();
 
         if (customerResultSet.next()) {
-            //PreparedStatement updateMain = conn.prepareStatement("UPDATE main SET available = 0, rented = ?, rentedPIN = ?,  contacts = ?, untilService = IFNULL(untilService, 500) WHERE toolID = ?");
             PreparedStatement updateMain = conn.prepareStatement("UPDATE main SET available = 0, rented = ?, rentedPIN = ?,  contacts = ? WHERE toolID = ?");
             updateMain.setString(1, customerResultSet.getString("name"));
             updateMain.setString(2, personalIDNo);
             updateMain.setString(3, customerResultSet.getString("phoneNumber"));
             updateMain.setString(4, toolIDSc);
             updateMain.executeUpdate();
+
             System.out.println("Main table updated successfully!");
             System.out.println("Lets calculate the price");
-            DBMEthods.calculateRentPrice(conn);
+            calculateRentPrice(conn);
         } else {
             System.out.println("Customer not found!");
             System.out.println("Enter 1 to insert new customer, or 2 to try again to gain out tool:");
             String choice = scanner.nextLine().trim();
 
             if (choice.equals("1")) {
-
-                insertCustomer(conn, scanner);
+                insertCustomerInDb(conn, scanner);
             } else if (choice.equals("2")) {
                 toolIDSearch(conn);
             } else {
                 System.out.println("Invalid input. Returning to main menu...");
+
+                // Šo tekstu parāda, bet neparāda pašu main menu
+                //Arta - man parāda gan šo tekstu, gan main menu
                 return;
             }
-
 
 
         }

@@ -1,3 +1,4 @@
+package tasks;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -8,7 +9,7 @@ import java.util.regex.Pattern;
 
 // Izmaiņas veicu tikai šajā atsevišķajā failā
 
-public class Untilservice_improved {
+/*public class Untilservice_improved {
 
 
         public static void updateMain(Connection conn) throws SQLException {
@@ -85,14 +86,14 @@ public class Untilservice_improved {
 
                 System.out.println("Main table updated successfully!");
                 System.out.println("Lets calculate the price");
-                DBMEthods.calculateRentPrice(conn);
+                tasks.MethodsToolRentalApp.calculateRentPrice(conn);
             } else {
                 System.out.println("Customer not found!");
                 System.out.println("Enter 1 to insert new customer, or 2 to try again to gain out tool:");
                 String choice = scanner.nextLine().trim();
 
                 if (choice.equals("1")) {
-                    insertCustomer(conn, scanner);
+                    tasks.MethodsToolRentalApp.insertCustomer(conn, scanner);
                 } else if (choice.equals("2")) {
                     toolIDSearch(conn);
                     updateMain(conn);
@@ -196,8 +197,8 @@ public class Untilservice_improved {
             }
         }
 
-    }
+    }*/
 
 
-}
+
 

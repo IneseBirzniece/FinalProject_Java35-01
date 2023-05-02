@@ -1,17 +1,12 @@
-import tasks.DBMEthods;
-import tasks.izmeginajums;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.util.Locale;
 import java.util.Scanner;
-import java.util.regex.Pattern;
 
-public class finalProject {
+public class MainToolRentalApp {
 
     public static void main(String[] args) {
 
-        //DBMEthods.logIn();
+        //tasks.MethodsToolRentalApp.logIn();
 
         String dbURL = "jdbc:mysql://localhost:3306/java35";
         String username = "root";
@@ -34,13 +29,13 @@ public class finalProject {
                 char action = scanner.nextLine().toLowerCase().trim().charAt(0);
                 switch(action){
                     case 'a':
-                        DBMEthods.toolIDSearch(conn);
+                        tasks.MethodsToolRentalApp.toolIDSearch(conn);
                         break;
                     case 'b':
-                        DBMEthods.returnTool(conn, scanner);
+                        tasks.MethodsToolRentalApp.returnTool(conn, scanner);
                         break;
                     case 'c':
-                        DBMEthods.readAvailableTools(conn);
+                        tasks.MethodsToolRentalApp.readAvailableTools(conn);
                         break;
                     case 'd':
                         System.out.println("Choose one option (f,g,h)");
@@ -50,13 +45,13 @@ public class finalProject {
                         char action2 = scanner.nextLine().toLowerCase().charAt(0);
                          switch(action2){
                              case 'f':
-                                 DBMEthods.readTools(conn);
+                                 tasks.MethodsToolRentalApp.readToolsFromDb(conn);
                                  break;
                              case 'g':
-                                 DBMEthods.insertTool(conn, scanner);
+                                 tasks.MethodsToolRentalApp.insertToolInDb(conn, scanner);
                                  break;
                              case 'h':
-                                 DBMEthods.deleteTool(conn, scanner);
+                                 tasks.MethodsToolRentalApp.deleteToolFromDb(conn, scanner);
                                  break;
                              default:
                                  System.out.println("Invalid option. Please try again.");
@@ -76,13 +71,13 @@ public class finalProject {
                         char action3 = scanner.nextLine().toLowerCase().charAt(0);
                         switch(action3){
                             case 'i':
-                                DBMEthods.readCustomer(conn);
+                                tasks.MethodsToolRentalApp.readCustomerFromDb(conn);
                                 break;
                             case 'j':
-                                DBMEthods.insertCustomer(conn, scanner);
+                                tasks.MethodsToolRentalApp.insertCustomerInDb(conn, scanner);
                                 break;
                             case 'k':
-                                DBMEthods.deleteCustomer(conn, scanner);
+                                tasks.MethodsToolRentalApp.deleteCustomerFromDb(conn, scanner);
                                 break;
                             default:
                                 System.out.println("Invalid option. Please try again.");
