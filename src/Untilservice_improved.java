@@ -5,10 +5,10 @@ import java.util.regex.Pattern;
 
 // Izmaiņas veicu tikai šajā atsevišķajā failā
 
-public class Untilservice_improved {
+/*public class Untilservice_improved {
 
 
-        public static void updateMain(Connection conn) throws SQLException {
+       public static void updateMain(Connection conn) throws SQLException {
             Scanner scanner = new Scanner(System.in);
             String toolIDSc;
             System.out.println("Confirm tool ID");
@@ -224,7 +224,7 @@ public class Untilservice_improved {
                 // Nākamreiz, kad mēģina instrumentu izsniegt, vienreiz atkal tiek rādīts jautājums par apkopi y/n un šis if steitments
                 // Man personīgi šis variants šķiet mazāk agresīvs :)
 // JAUNS
-                if (confirm == 'n'){
+  /*              if (confirm == 'n'){
 
                     System.out.println("NB! The tool will not be available until after the service!");
                     System.out.println("Send to service now? y/n");
@@ -241,7 +241,7 @@ public class Untilservice_improved {
     }
 
     // Mainīta koda daļa ar IF steitmentu, kas pārbauda pieejamību
-    public static void toolIDSearch(Connection conn) throws SQLException {
+    /*public static void toolIDSearch(Connection conn) throws SQLException {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Enter tool ID:");
         String toolIDSc = scanner.nextLine().toUpperCase().trim();
@@ -304,10 +304,10 @@ public class Untilservice_improved {
             System.out.println("ID does not exist");
             toolIDSearch(conn);
         }
-    }
+    }*/
 
     // Mainīts SQL vaicājums, lai nolasītu pieejamos rīkus arī no tools tabulas
-    public static void readAvailableTools(Connection conn) throws SQLException {
+   /* public static void readAvailableTools(Connection conn) throws SQLException {
 
         String sql = "SELECT * FROM tools WHERE id NOT IN (SELECT toolID FROM main) " +
                 "OR id = (SELECT toolID FROM main WHERE available <> 0 OR untilService > 24)";
@@ -326,7 +326,7 @@ public class Untilservice_improved {
             System.out.println(String.format(output, category, id, name, specifications, serviceHours, priceDay));
         }
     }
-    }
+    }*/
 
 
 

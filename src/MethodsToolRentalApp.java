@@ -220,23 +220,21 @@ public class MethodsToolRentalApp {
     //metode, lai parādītu Main tabulu
     public static void readAvailableTools(Connection conn) throws SQLException {
 
-        String sql = "SELECT * FROM main WHERE available = 1 || untilService >= 24";
+        String sql = "SELECT * FROM tools WHERE id NOT IN (SELECT toolID FROM main) " +
+                "OR id = (SELECT toolID FROM main WHERE available <> 0 OR untilService > 24)";
         Statement statement = conn.createStatement();
         ResultSet resultSet = statement.executeQuery(sql);
 
         while (resultSet.next()) {
-            int nPk = resultSet.getInt(1);
-            String toolID = resultSet.getString(2);
-            String toolName = resultSet.getString(3);
-            int available = resultSet.getInt(4);
-            int untilService = resultSet.getInt(5);
-            String rented = resultSet.getString(6);
-            String rentedPIN= resultSet.getString(7);
-            String contacts = resultSet.getString(8);
+            String category = resultSet.getString(1);
+            String id = resultSet.getString(2);
+            String name = resultSet.getString(3);
+            String specifications = resultSet.getString(4);
+            int serviceHours = resultSet.getInt(5);
+            double priceDay = resultSet.getDouble(6);
 
-
-            String output = ": %s - %s - %s - %s - %s - %s - %s - %s";
-            System.out.println(String.format(output, nPk, toolID, toolName, available, untilService, rented, rentedPIN, contacts));
+            String output = ": %s - %s - %s - %s - %s - %s";
+            System.out.println(String.format(output, category, id, name, specifications, serviceHours, priceDay));
         }
     }
 
@@ -311,7 +309,6 @@ public class MethodsToolRentalApp {
                 char confirm = scanner.nextLine().charAt(0);
 
                 while (confirm == 'y') {
-
                     PreparedStatement toolReset = conn.prepareStatement("UPDATE main SET untilService = 500 WHERE toolID = ?");
                     toolReset.setString(1, newToolID);
                     if (toolReset.executeUpdate() > 0) {
@@ -319,13 +316,22 @@ public class MethodsToolRentalApp {
 
                     } else {
                         System.out.println("Resetting service hours failed");
-                    }break;
+                    }
+                    break;
                 }
+                if (confirm == 'n'){
+
+                    System.out.println("NB! The tool will not be available until after the service!");
+                    System.out.println("Send to service now? y/n");
+                    confirm = scanner.nextLine().charAt(0);
+                    PreparedStatement resetLater = conn.prepareStatement("UPDATE main SET available = 0 WHERE toolID = ?");
+                    resetLater.setString(1, newToolID);
+                    resetLater.executeUpdate();
+                }
+
             } else {
                 System.out.println("Till service " + hours + " hours. All ok");
             }
-        } else {
-
         }
     }
 
@@ -390,18 +396,35 @@ public class MethodsToolRentalApp {
         takenBy.setString(1, toolIDSc);
         ResultSet resultSet4 = takenBy.executeQuery();
 
+        // Pārbauda, vai nav atlikts service reset
+        PreparedStatement laterReset = conn.prepareStatement("SELECT * FROM main WHERE untilService < 24 AND toolID = ?");
+        laterReset.setString(1, toolIDSc);
+        ResultSet resultSet6 = laterReset.executeQuery();
 
+
+// JAUNS!
         if (resultSet.next()) {
             System.out.println("ID: " + resultSet.getString(2) + "\t Name: " + resultSet.getString(3));
-            if (!resultSet2.next() || resultSet3.next()) {
+            if (!resultSet2.next() || resultSet3.next() || !resultSet6.next()) {
                 System.out.println("Tool is available");
                 updateMainDb(conn);
-                // Pārbauda, vai instruments vispār ir ticis ievadīts main tabulā
+            } else if (resultSet6.next()) {
 
-            } else if (resultSet4.next()) {
-                System.out.println("Handed out to:\n"
-                        + resultSet4.getString(6) + ", " + resultSet4.getString(7) + ", " + resultSet4.getString(8));
+                hoursTillService(conn, toolIDSc, scanner);
             }
+
+
+            // Pārbauda, vai instruments vispār ir ticis ievadīts main tabulā
+
+            PreparedStatement inMain = conn.prepareStatement("SELECT toolID FROM main WHERE toolID = ?");
+            inMain.setString(1, toolIDSc);
+            ResultSet resultSet5 = inMain.executeQuery();
+
+
+        } else if (resultSet4.next()) {
+            System.out.println("Handed out to:\n"
+                    + resultSet4.getString(6) + ", " + resultSet4.getString(7) + ", " + resultSet4.getString(8));
+
         } else {
             System.out.println("ID does not exist");
             toolIDSearch(conn);
