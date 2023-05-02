@@ -221,7 +221,7 @@ public class MethodsToolRentalApp {
     public static void readAvailableTools(Connection conn) throws SQLException {
 
         String sql = "SELECT * FROM tools WHERE id NOT IN (SELECT toolID FROM main) " +
-                "OR id = (SELECT toolID FROM main WHERE available <> 0 OR untilService > 24)";
+                "OR id IN (SELECT toolID FROM main WHERE available = 1 AND untilService > 24)";
         Statement statement = conn.createStatement();
         ResultSet resultSet = statement.executeQuery(sql);
 
@@ -233,7 +233,7 @@ public class MethodsToolRentalApp {
             int serviceHours = resultSet.getInt(5);
             double priceDay = resultSet.getDouble(6);
 
-            String output = ": %s - %s - %s - %s - %s - %s";
+            String output = "Tool: %s - %s - %s - %s - %s - %s";
             System.out.println(String.format(output, category, id, name, specifications, serviceHours, priceDay));
         }
     }
@@ -339,8 +339,21 @@ public class MethodsToolRentalApp {
         Scanner scanner = new Scanner(System.in);
         String sql = "SELECT priceDay FROM tools WHERE id = ?";
         PreparedStatement preparedStatement = conn.prepareStatement(sql);
-        System.out.println("Enter tool ID: ");
-        String toolID = scanner.nextLine();
+        String toolID;
+        while (true) {
+            System.out.println("Enter tool ID");
+            toolID = scanner.nextLine().toUpperCase(Locale.ROOT).trim();
+
+            if (!Pattern.matches("[A-Z]{2,5}[0-9]{1,3}", toolID)) {
+                System.out.println("Your inputted tool ID number is not valid, try again");
+            } else if (!tasks.MethodsToolRentalApp.checkIfToolIdExists(conn, toolID)) {
+                System.out.println("The inputted tool ID don't exists, try again");
+            } else {
+                break;// Exit the loop if the input is valid
+            }
+        }
+        //System.out.println("Enter tool ID: ");
+       // String toolID = scanner.nextLine();
 
         preparedStatement.setString(1, toolID);
         ResultSet resultSet = preparedStatement.executeQuery();
@@ -368,13 +381,26 @@ public class MethodsToolRentalApp {
     // Agneses metode
     public static void toolIDSearch(Connection conn) throws SQLException {
         Scanner scanner = new Scanner(System.in);
-        System.out.println("Enter tool ID:");
+        String toolIDSc;
+        while (true) {
+            System.out.println("Enter tool ID number");
+            toolIDSc = scanner.nextLine().toUpperCase(Locale.ROOT).trim();
+
+            if (!Pattern.matches("[A-Z]{2,5}[0-9]{1,3}", toolIDSc)) {
+                System.out.println("Your inputted tool ID number is not valid, try again");
+            } else if (!tasks.MethodsToolRentalApp.checkIfToolIdExists(conn, toolIDSc)) {
+                System.out.println("The inputted tool ID don't exists, try again");
+            } else {
+                break;// Exit the loop if the input is valid
+            }
+        }
+        /*System.out.println("Enter tool ID:");
         String toolIDSc = scanner.nextLine().toUpperCase().trim();
         while ((!Pattern.matches("[A-Z]{2,5}[0-9]{1,3}", toolIDSc))) {
             System.out.println("Your inputted tool ID number is not valid, try again");
             System.out.println("Enter tool ID");
             toolIDSc = scanner.nextLine().toUpperCase().trim();
-        }
+        }*/
 
         // Salīdzina SQL ar tool ID scanner ievadi. Ja ID atrasts, izdrukā id un name
         PreparedStatement statement = conn.prepareStatement("SELECT * FROM tools WHERE id = ?");
@@ -387,7 +413,7 @@ public class MethodsToolRentalApp {
         ResultSet resultSet2 = everTaken.executeQuery();
 
         // Ja instruments ir main tabulā, pārbauda, vai available nav 0
-        PreparedStatement isNowAvailable = conn.prepareStatement("SELECT * FROM main WHERE available <> 0 and toolID = ?");
+        PreparedStatement isNowAvailable = conn.prepareStatement("SELECT * FROM main WHERE available <> 0 AND toolID = ?");
         isNowAvailable.setString(1, toolIDSc);
         ResultSet resultSet3 = isNowAvailable.executeQuery();
 
@@ -432,13 +458,26 @@ public class MethodsToolRentalApp {
     }
     public static void updateMainDb(Connection conn) throws SQLException {
         Scanner scanner = new Scanner(System.in);
-        System.out.println("Confirm tool ID");
+        String toolIDSc;
+        while (true) {
+            System.out.println("Confirm tool ID");
+            toolIDSc = scanner.nextLine().toUpperCase(Locale.ROOT).trim();
+
+            if (!Pattern.matches("[A-Z]{2,5}[0-9]{1,3}", toolIDSc)) {
+                System.out.println("Your inputted tool ID number is not valid, try again");
+            } else if (!tasks.MethodsToolRentalApp.checkIfToolIdExists(conn, toolIDSc)) {
+                System.out.println("The inputted tool ID don't exists, try again");
+            } else {
+                break;// Exit the loop if the input is valid
+            }
+        }
+        /*System.out.println("Confirm tool ID");
         String toolIDSc = scanner.nextLine().toUpperCase().trim();
         while ((!Pattern.matches("[A-Z]{2,5}[0-9]{1,3}", toolIDSc))) {
             System.out.println("Your inputted tool ID number is not valid, try again");
             System.out.println("Confirm tool ID");
             toolIDSc = scanner.nextLine().toUpperCase().trim();
-        }
+        }*/
 
         PreparedStatement statement = conn.prepareStatement("SELECT * FROM tools WHERE id = ?");
         statement.setString(1, toolIDSc);

@@ -6,7 +6,7 @@ public class MainToolRentalApp {
 
     public static void main(String[] args) {
 
-        //tasks.MethodsToolRentalApp.logIn();
+        tasks.MethodsToolRentalApp.logIn();
 
         String dbURL = "jdbc:mysql://localhost:3306/java35";
         String username = "root";
@@ -43,22 +43,22 @@ public class MainToolRentalApp {
                         System.out.println("g - inserting tools");
                         System.out.println("h - deleting tool");
                         char action2 = scanner.nextLine().toLowerCase().charAt(0);
-                         switch(action2){
-                             case 'f':
-                                 tasks.MethodsToolRentalApp.readToolsFromDb(conn);
-                                 break;
-                             case 'g':
-                                 tasks.MethodsToolRentalApp.insertToolInDb(conn, scanner);
-                                 break;
-                             case 'h':
-                                 tasks.MethodsToolRentalApp.deleteToolFromDb(conn, scanner);
-                                 break;
-                             default:
-                                 System.out.println("Invalid option. Please try again.");
-                                 break;
-                         }
-                         System.out.println("Do you want to do something more? y/n");
-                         again = scanner.nextLine().toLowerCase().charAt(0);
+                        switch(action2){
+                            case 'f':
+                                tasks.MethodsToolRentalApp.readToolsFromDb(conn);
+                                break;
+                            case 'g':
+                                tasks.MethodsToolRentalApp.insertToolInDb(conn, scanner);
+                                break;
+                            case 'h':
+                                tasks.MethodsToolRentalApp.deleteToolFromDb(conn, scanner);
+                                break;
+                            default:
+                                System.out.println("Invalid option. Please try again.");
+                                break;
+                        }
+                        System.out.println("Do you want to do something more? y/n");
+                        again = scanner.nextLine().toLowerCase().charAt(0);
                         if (again == 'n'){
                             System.out.println("Goodbye!");
                         }
