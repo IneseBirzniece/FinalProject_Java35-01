@@ -6,7 +6,7 @@ public class MainToolRentalApp {
 
     public static void main(String[] args) {
 
-        tasks.MethodsToolRentalApp.logIn();
+        //tasks.MethodsToolRentalApp.logIn();
 
         String dbURL = "jdbc:mysql://localhost:3306/java35";
         String username = "root";
