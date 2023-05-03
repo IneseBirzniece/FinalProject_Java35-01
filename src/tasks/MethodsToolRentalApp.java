@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 public class MethodsToolRentalApp {
     private String toolIDSc;
 
+    // Login method
     public static void logIn() {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Enter your email address: ");
@@ -30,23 +31,23 @@ public class MethodsToolRentalApp {
         System.out.println("You are logged in");
     }
 
-    // metode, ar kuru ievada jaunu klientu
+    // Method for inserting a new customer in the Customers database
     public static void insertCustomerInDb(Connection conn, Scanner scanner) throws SQLException {
-        System.out.println("Enter customers name and surname");
+        System.out.println("Enter customer's name and surname");
         String newName = scanner.nextLine();
 
         String newPersonalIDNo;
         while (true) {
-            System.out.println("Enter customers personal ID number");
+            System.out.println("Enter customer's personal ID number");
             newPersonalIDNo = scanner.nextLine().trim();
             if (Pattern.matches("[0-9]{6}-[0-9]{5}", newPersonalIDNo)) {
-                break; // Exit the loop if the input is valid
+                break; // Exits the loop if the input is valid
             } else {
-                System.out.println("Your inputted personal ID number is not valid, try again");
+                System.out.println("The inputted personal ID number is not valid, try again");
             }
         }
 
-        System.out.println("Enter customers phone number");
+        System.out.println("Enter customer's phone number");
         String newPhoneNumber = scanner.nextLine();
 
         String sql = "INSERT INTO customers (name, personalIDNo, phoneNumber) VALUES (?, ?, ?)";
@@ -64,36 +65,36 @@ public class MethodsToolRentalApp {
         }
     }
 
-    // metode, ar kuru tiek ievadīts jauns instruments
+    // A method for inserting a new tool in the Tools database
     public static void insertToolInDb(Connection conn, Scanner scanner) throws SQLException {
         System.out.println("Enter tool category");
         String newToolCategory = scanner.nextLine();
 
         String newToolID;
         while (true) {
-            System.out.println("Enter tool ID, that contains 3-5 letters and 1-3 numbers");
+            System.out.println("Enter tool ID that contains 3-5 letters and 1-3 numbers");
             newToolID = scanner.nextLine().toUpperCase(Locale.ROOT).trim();
 
             if (!Pattern.matches("[A-Z]{2,5}[0-9]{1,3}", newToolID)) {
-                System.out.println("Your inputted tool ID number is not valid, try again");
+                System.out.println("The inputted tool ID number is not valid, try again");
             } else if (checkIfToolIdExists(conn, newToolID)) {
                 System.out.println("The inputted tool ID already exists, try again");
             } else {
-                break;// Exit the loop if the input is valid
+                break;// Exits the loop if the input is valid
             }
         }
 
         System.out.println("Enter tool name");
         String newNToolName = scanner.nextLine();
 
-        System.out.println("Enter tool main parameters");
+        System.out.println("Enter main parameters of the tool");
         String newToolParameters = scanner.nextLine();
 
         System.out.println("Enter maximum usage hours");
         int newUsageHours = scanner.nextInt();
         scanner.nextLine();
 
-        System.out.println("Enter tool rental price per day");
+        System.out.println("Enter tool's rental price per day");
         double newToolPrice = scanner.nextDouble();
         scanner.nextLine();
 
@@ -114,11 +115,11 @@ public class MethodsToolRentalApp {
             System.out.println("Something went wrong");
         }
     }
-    // metode, lai izdzēstu instrumentu
+    // A method for deleting a tool from the Tools database
     public static void deleteToolFromDb(Connection conn, Scanner scanner) throws SQLException{
         String id;
         while (true) {
-            System.out.println("Enter tool ID you want to delete");
+            System.out.println("Enter ID of the tool you want to delete");
             id = scanner.nextLine().toUpperCase(Locale.ROOT).trim();
             if (!checkIfToolIdExists(conn, id)) {
                 System.out.println("Tool with ID " + id + " does not exist, try again");
@@ -138,8 +139,8 @@ public class MethodsToolRentalApp {
         }
     }
 
-    // metode ar kuru pārbauda, vai ievadot jaunu instrumenta ID jau tāds neeksistē
-    // kā arī ar šo pašu pārbauda, vai dzēšot instrumentu, vispār tāds eksistē
+    // A method for checking if a tool ID exists in the Tools database.
+    // Applied during tool insertion and deletion workflow
     public static boolean checkIfToolIdExists(Connection conn, String id) throws SQLException {
         String sql = "SELECT COUNT(*) FROM tools WHERE id = ?";
         PreparedStatement preparedStatement = conn.prepareStatement(sql);
@@ -150,11 +151,11 @@ public class MethodsToolRentalApp {
         return count > 0;
     }
 
-    // metode, lai izdzēstu Customer
+    // A method for deleting a customer from the Customers database
     public static void deleteCustomerFromDb(Connection conn, Scanner scanner) throws SQLException{
         String personalIDNo;
         while (true) {
-            System.out.println("Enter customer personal ID No. you want to delete");
+            System.out.println("Enter personal ID No. of the customer you want to delete");
             personalIDNo = scanner.nextLine().trim();
             if (!checkIfCustomerIdExistsInDB(conn, personalIDNo)) {
                 System.out.println("Customer with personal ID No. " + personalIDNo + " does not exist, try again");
@@ -174,7 +175,7 @@ public class MethodsToolRentalApp {
         }
     }
 
-    // metode, lai parādītu instrumentu tabulu
+    // A method for showing all tools in the stock (inventory list in the Tools database)
     public static void readToolsFromDb(Connection conn) throws SQLException {
 
         String sql = "SELECT * FROM tools";
@@ -189,12 +190,12 @@ public class MethodsToolRentalApp {
             int serviceHours = resultSet.getInt(5);
             String priceDay = resultSet.getString(6);
 
-            String output = "Tool : %s - %s - %s - %s - %s - %s";
+            String output = "Tool: %s - %s - %s - %s - %s - %s";
             System.out.println(String.format(output, category, id, name, specifications, serviceHours, priceDay));
         }
 
     }
-    // metode, lai parādītu klientu tabulu
+    // A method for showing all customers entered in the Customers database
     public static void readCustomerFromDb(Connection conn) throws SQLException {
 
         String sql = "SELECT * FROM customers";
@@ -206,13 +207,13 @@ public class MethodsToolRentalApp {
             String personalIDNo = resultSet.getString(2);
             String phoneNumber = resultSet.getString(3);
 
-            String output = "Customer : %s - %s - %s";
+            String output = "Customer: %s - %s - %s";
             System.out.println(String.format(output, name, personalIDNo, phoneNumber));
         }
 
     }
 
-    //metode, lai parādītu pieejamos instrumentus
+    // A method for showing only the tools that are available for rent
     public static void readAvailableTools(Connection conn) throws SQLException {
 
         String sql = "SELECT * FROM tools WHERE id NOT IN (SELECT toolID FROM main) " +
@@ -232,7 +233,7 @@ public class MethodsToolRentalApp {
             System.out.println(String.format(output, category, id, name, specifications, serviceHours, priceDay));
         }
     }
-    // metode ar kuru pārbauda vai Customer tabulā vispar eksistē personal ID No.
+    // A method that checks if a personal ID No. exists in the Customers database
     public static boolean checkIfCustomerIdExistsInDB(Connection conn, String personalIDNo) throws SQLException {
         String sql = "SELECT COUNT(*) FROM customers WHERE personalIDNo = ?";
         PreparedStatement preparedStatement = conn.prepareStatement(sql);
@@ -243,6 +244,7 @@ public class MethodsToolRentalApp {
         return count > 0;
     }
 
+    // A method for returning tools
     public static void returnTool(Connection conn, Scanner scanner ) throws SQLException {
         String newToolID;
         while (true) {
@@ -250,15 +252,15 @@ public class MethodsToolRentalApp {
             newToolID = scanner.nextLine().toUpperCase(Locale.ROOT).trim();
 
             if (!Pattern.matches("[A-Z]{2,5}[0-9]{1,3}", newToolID)) {
-                System.out.println("Your inputted tool ID number is not valid, try again");
+                System.out.println("The inputted tool ID number is not valid, try again");
             } else if (!tasks.MethodsToolRentalApp.checkIfToolIdExists(conn, newToolID)) {
-                System.out.println("The inputted tool ID don't exists, try again");
+                System.out.println("The inputted tool ID does not exist, try again");
             } else {
-                break;// Exit the loop if the input is valid
+                break;// Exits the loop if the input is valid
             }
         }
 
-        // Pārbauda, vai instruments vispār ir ticis ievadīts main tabulā
+        // Checks if a tool has ever been handed out (entered in the Main table)
         PreparedStatement everTaken = conn.prepareStatement("SELECT available FROM main WHERE toolID = ?");
         everTaken.setString(1, newToolID);
         ResultSet resultSet2 = everTaken.executeQuery();
@@ -266,11 +268,11 @@ public class MethodsToolRentalApp {
         if (resultSet2.next()) {
             int available = resultSet2.getInt("available");
             if (available == 1) {
-                System.out.println("Error! Tool has already been returned");
+                System.out.println("Error! The tool has already been returned");
                 return;
             }
         }
-        System.out.println("Enter worked hours");
+        System.out.println("Enter usage hours");
         int timeOfUse = scanner.nextInt();
         scanner.nextLine();
 
@@ -286,9 +288,9 @@ public class MethodsToolRentalApp {
         } else {
             System.out.println("Something went wrong");
         }
-
     }
 
+    // A method for calculating the hours till the routine maintenance and resetting hours to 500 after the maintenance
     public static void hoursTillService(Connection conn, String newToolID, Scanner scanner) throws SQLException {
         String sql = "SELECT untilService FROM main WHERE toolID = ?";
         PreparedStatement preparedStatement = conn.prepareStatement(sql);
@@ -298,7 +300,7 @@ public class MethodsToolRentalApp {
         if (resultSet.next()) {
             hours = resultSet.getInt("untilService");
             if (hours < 24) {
-                System.out.println("Warning!!! Till service less than 24 hours.");
+                System.out.println("Warning!!! Less than 24 hours till service.");
                 System.out.println("Send to service now? y/n");
                 char confirm = scanner.nextLine().charAt(0);
 
@@ -311,7 +313,7 @@ public class MethodsToolRentalApp {
                         PreparedStatement resetLater = conn.prepareStatement("UPDATE main SET available = 0 WHERE toolID = ?");
                         resetLater.setString(1, newToolID);
                         resetLater.executeUpdate();
-                        System.out.println("The tool will be automatically sent to service.\nRe-enter the tool ID and enter 0 worked hours:");
+                        System.out.println("The tool will be automatically sent to service.\nRe-enter the tool ID and enter 0 usage hours:");
                         PreparedStatement toolReset = conn.prepareStatement("UPDATE main SET untilService = 500 WHERE toolID = ?");
                         toolReset.setString(1, newToolID);
                         toolReset.executeUpdate();
@@ -320,9 +322,7 @@ public class MethodsToolRentalApp {
                             System.out.println("Service hours for the tool have been reset to 500");
                         } else {
                             System.out.println("Resetting service hours failed");
-
                         }
-
                     }
 
                     while (confirm == 'y') {
@@ -336,15 +336,15 @@ public class MethodsToolRentalApp {
                         }
                         break;
                     }
-
-                } else {
-                    System.out.println("Till service " + hours + " hours. All ok");
                 }
-
+                } else {
+                    System.out.println("Till service " + hours + " hours. Everything is OK");
+                }
             }
         }
-    }
 
+
+    // A method for calculating total rental price
     public static double calculateRentPrice(Connection conn) throws SQLException {
         Scanner scanner = new Scanner(System.in);
         String sql = "SELECT priceDay FROM tools WHERE id = ?";
@@ -355,11 +355,11 @@ public class MethodsToolRentalApp {
             toolID = scanner.nextLine().toUpperCase(Locale.ROOT).trim();
 
             if (!Pattern.matches("[A-Z]{2,5}[0-9]{1,3}", toolID)) {
-                System.out.println("Your inputted tool ID number is not valid, try again");
+                System.out.println("The inputted tool ID number is not valid, try again");
             } else if (!tasks.MethodsToolRentalApp.checkIfToolIdExists(conn, toolID)) {
-                System.out.println("The inputted tool ID don't exists, try again");
+                System.out.println("The inputted tool ID does not exist, try again");
             } else {
-                break;// Exit the loop if the input is valid
+                break;// Exits the loop if the input is valid
             }
         }
 
@@ -368,17 +368,16 @@ public class MethodsToolRentalApp {
         if (resultSet.next()) {
             double pricePerDay = resultSet.getDouble("priceDay");
 
-            System.out.println("Enter days for rent: ");
+            System.out.println("Enter number of days for rent: ");
             int numOfDays = scanner.nextInt();
 
-// Pievienoju validāciju dienu skaitam, citādi, ja ievada ko nepareizu, cenu neaprēķina, parāda Tool not found, bet main tabulu updeito
             while (numOfDays < 1) {
                 System.out.println("The inputted number of days is not valid, try again");
-                System.out.println("Enter days for rent: ");
+                System.out.println("Enter number of days for rent: ");
                 numOfDays = scanner.nextInt();
             }
             double rentPrice = pricePerDay * numOfDays;
-            System.out.println("Rent price is: " + rentPrice + " EUR");
+            System.out.println("Total rental price: " + rentPrice + " EUR");
             return rentPrice;
         } else {
             System.out.println("Tool not found");
@@ -386,8 +385,8 @@ public class MethodsToolRentalApp {
         }
     }
 
-    // Agneses metode
-    public static void toolIDSearch(Connection conn) throws SQLException {
+    // A method for handing out tools and checking the availability from different perspectives
+        public static void toolIDSearch(Connection conn) throws SQLException {
         Scanner scanner = new Scanner(System.in);
         String toolIDSc;
         while (true) {
@@ -395,46 +394,45 @@ public class MethodsToolRentalApp {
             toolIDSc = scanner.nextLine().toUpperCase(Locale.ROOT).trim();
 
             if (!Pattern.matches("[A-Z]{2,5}[0-9]{1,3}", toolIDSc)) {
-                System.out.println("Your inputted tool ID number is not valid, try again");
+                System.out.println("The inputted tool ID number is not valid, try again");
             } else if (!tasks.MethodsToolRentalApp.checkIfToolIdExists(conn, toolIDSc)) {
-                System.out.println("The inputted tool ID don't exists, try again");
+                System.out.println("The inputted tool ID does not exist, try again");
             } else {
-                break;// Exit the loop if the input is valid
+                break;// Exits the loop if the input is valid
             }
         }
 
-        // Salīdzina SQL ar tool ID scanner ievadi. Ja ID atrasts, izdrukā id un name
+        // Checks if a tool exists in the Tools database
         PreparedStatement statement = conn.prepareStatement("SELECT * FROM tools WHERE id = ?");
         statement.setString(1, toolIDSc);
         ResultSet resultSet = statement.executeQuery();
-        // Pārbauda, vai instruments vispār ir ticis ievadīts main tabulā
-        PreparedStatement everTaken = conn.prepareStatement("SELECT available FROM main WHERE toolID = ?");
-        everTaken.setString(1, toolIDSc);
-        ResultSet resultSet2 = everTaken.executeQuery();
-        // Ja instruments ir main tabulā, pārbauda, vai available nav 0
-        PreparedStatement isNowAvailable = conn.prepareStatement("SELECT * FROM main WHERE available <> 0 AND toolID = ?");
-        isNowAvailable.setString(1, toolIDSc);
-        ResultSet resultSet3 = isNowAvailable.executeQuery();
-        // Pārbauda, vai un kas ir paņēmis instrumentu. Ja ir paņemts, norāda klienta datus
-        PreparedStatement takenBy = conn.prepareStatement("SELECT * FROM main WHERE available = 0 AND untilService > 24 AND toolID = ?");
-        takenBy.setString(1, toolIDSc);
-        ResultSet resultSet4 = takenBy.executeQuery();
-        // Pārbauda, vai nav atlikts service reset
-        PreparedStatement laterReset = conn.prepareStatement("SELECT * FROM main WHERE untilService < 24 AND toolID = ?");
-        laterReset.setString(1, toolIDSc);
-        ResultSet resultSet6 = laterReset.executeQuery();
-        // Pārbauda, vai instruments vispār ir ticis ievadīts main tabulā
+
+        // Checks if a tool has ever been rented
         PreparedStatement inMain = conn.prepareStatement("SELECT toolID FROM main WHERE toolID = ?");
         inMain.setString(1, toolIDSc);
         ResultSet resultSet5 = inMain.executeQuery();
 
+        // If the tool has ever been rented, checks if it is available
+        PreparedStatement isNowAvailable = conn.prepareStatement("SELECT * FROM main WHERE available <> 0 AND toolID = ?");
+        isNowAvailable.setString(1, toolIDSc);
+        ResultSet resultSet3 = isNowAvailable.executeQuery();
 
-// JAUNS!
+        // If a tool is rented to a customer, shows customer data
+        PreparedStatement takenBy = conn.prepareStatement("SELECT * FROM main WHERE available = 0 AND untilService > 24 AND toolID = ?");
+        takenBy.setString(1, toolIDSc);
+        ResultSet resultSet4 = takenBy.executeQuery();
+
+        // Checks if routine maintenance has not been postponed
+        PreparedStatement laterReset = conn.prepareStatement("SELECT * FROM main WHERE untilService < 24 AND toolID = ?");
+        laterReset.setString(1, toolIDSc);
+        ResultSet resultSet6 = laterReset.executeQuery();
+
+
         if (resultSet.next()) {
             if (resultSet6.next() && !resultSet4.next()) {
                 hoursTillService(conn, toolIDSc, scanner);
-            } else if (!resultSet2.next() || resultSet3.next()) {
-                System.out.println("ID: " + resultSet.getString(2) + "\t Name: " + resultSet.getString(3));
+            } else if (!resultSet5.next() || resultSet3.next()) {
+                System.out.println("Tool ID: " + resultSet.getString(2) + "\t Name: " + resultSet.getString(3));
                 System.out.println("Tool is available");
                 updateMainDb(conn);
 
@@ -443,10 +441,12 @@ public class MethodsToolRentalApp {
                         + resultSet4.getString(6) + ", " + resultSet4.getString(7) + ", " + resultSet4.getString(8));
             }
         } else {
-            System.out.println("ID does not exist");
+            System.out.println("Tool ID does not exist");
             toolIDSearch(conn);
         }
     }
+
+    // A method for entering rental operations in the Main table
     public static void updateMainDb(Connection conn) throws SQLException {
         Scanner scanner = new Scanner(System.in);
         String toolIDSc;
@@ -454,11 +454,11 @@ public class MethodsToolRentalApp {
             System.out.println("Confirm tool ID");
             toolIDSc = scanner.nextLine().toUpperCase().trim();
             if (!Pattern.matches("[A-Z]{2,5}[0-9]{1,3}", toolIDSc)) {
-                System.out.println("Your inputted tool ID number is not valid, try again");
+                System.out.println("The inputted tool ID number is not valid, try again");
             } else if (!tasks.MethodsToolRentalApp.checkIfToolIdExists(conn, toolIDSc)) {
-                System.out.println("The inputted tool ID don't exists, try again");
+                System.out.println("The inputted tool ID does not exist, try again");
             } else {
-                break;// Exit the loop if the input is valid
+                break;// Exits the loop if the input is valid
             }
         }
 
@@ -470,7 +470,7 @@ public class MethodsToolRentalApp {
             updateTools.setString(1, toolIDSc);
             updateTools.executeUpdate();
         }
-// Jauna koda daļa: pārbauda, cik reižu instruments ierakstīts main tabulā kā pieejams
+
         PreparedStatement serviceCheck = conn.prepareStatement("SELECT * FROM main WHERE available = 1 AND toolID = ?");
         serviceCheck.setString(1, toolIDSc);
         ResultSet resultSet5 = serviceCheck.executeQuery();
@@ -478,15 +478,12 @@ public class MethodsToolRentalApp {
         while (resultSet5.next()){
             count++;
         }
-        // Ja tikai vienu reizi, Java paņem sākuma vērtību 500 un izmanto to turpmākiem aprēķiniem
+
+        // Sets initial service hours for tools
         if(count == 1){
             PreparedStatement checkService = conn.prepareStatement("UPDATE main SET untilService = 500 WHERE toolID = ?");
             checkService.setString(1, toolIDSc);
             checkService.executeUpdate();
-            // Ja vairākas reizes, Java paņem vērtību no iepriekšējās rindas, kas attiecas uz konkrēto toolID
-            // Nav ideāli, bet strādā - katru reizi atjaunojas visa kolonna, nevar apskatīties, cik h katrs klients lietojis
-            // Bet visu rēķina pareizi, arī pēc service reset atjaunojas uz 500 h
-
         } else if(count > 1){
             PreparedStatement isCheckService = conn.prepareStatement("UPDATE main\n" +
                     "SET untilService = (\n" +
@@ -518,12 +515,12 @@ public class MethodsToolRentalApp {
             updateMain.setString(4, toolIDSc);
             updateMain.executeUpdate();
 
-            System.out.println("Main table updated successfully!");
+            System.out.println("Main DB updated successfully!");
             System.out.println("Lets calculate the price");
             calculateRentPrice(conn);
         } else {
             System.out.println("Customer not found!");
-            System.out.println("Enter 1 to insert new customer, or 2 to try again to gain out tool:");
+            System.out.println("Enter '1' to insert a new customer, or '2' to retry handing out a tool:");
             String choice = scanner.nextLine().trim();
 
             if (choice.equals("1")) {
@@ -531,13 +528,9 @@ public class MethodsToolRentalApp {
             } else if (choice.equals("2")) {
                 toolIDSearch(conn);
             } else {
-                System.out.println("Invalid input. Returning to main menu...");
+                System.out.println("Invalid input. Returning to the main menu...");
                 return;
             }
-
-
         }
     }
-
-
 }

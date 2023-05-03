@@ -22,7 +22,7 @@ public class MainToolRentalApp {
 
                 System.out.println("a - hand out tool");
                 System.out.println("b - return tool");
-                System.out.println("c - reading available tools and tools with hours till service >=24h ");
+                System.out.println("c - read available tools and tools with hours till service >=24h ");
                 System.out.println("d - actions with tools DB");
                 System.out.println("e - actions with customers DB");
                 System.out.println("q - quit");
@@ -96,7 +96,6 @@ public class MainToolRentalApp {
                         System.out.println("Invalid option. Please try again.");
                         break;
                 }
-
             }
             conn.close();
 
