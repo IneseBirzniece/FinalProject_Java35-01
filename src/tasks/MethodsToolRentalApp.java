@@ -65,7 +65,6 @@ public class MethodsToolRentalApp {
     }
 
     // metode, ar kuru tiek ievadīts jauns instruments
-    // !!! nestrādā pēdējais apgalvojums par priceDay
     public static void insertToolInDb(Connection conn, Scanner scanner) throws SQLException {
         System.out.println("Enter tool category");
         String newToolCategory = scanner.nextLine();
@@ -175,8 +174,6 @@ public class MethodsToolRentalApp {
         }
     }
 
-    // metode ar kuru pārbauda vai Customer tabulā vispar eksistē personal ID No. kuru grib izdzēst
-
     // metode, lai parādītu instrumentu tabulu
     public static void readToolsFromDb(Connection conn) throws SQLException {
 
@@ -197,6 +194,7 @@ public class MethodsToolRentalApp {
         }
 
     }
+    // metode, lai parādītu klientu tabulu
     public static void readCustomerFromDb(Connection conn) throws SQLException {
 
         String sql = "SELECT * FROM customers";
@@ -214,7 +212,7 @@ public class MethodsToolRentalApp {
 
     }
 
-    //metode, lai parādītu Main tabulu
+    //metode, lai parādītu pieejamos instrumentus
     public static void readAvailableTools(Connection conn) throws SQLException {
 
         String sql = "SELECT * FROM tools WHERE id NOT IN (SELECT toolID FROM main) " +
@@ -234,7 +232,7 @@ public class MethodsToolRentalApp {
             System.out.println(String.format(output, category, id, name, specifications, serviceHours, priceDay));
         }
     }
-
+    // metode ar kuru pārbauda vai Customer tabulā vispar eksistē personal ID No.
     public static boolean checkIfCustomerIdExistsInDB(Connection conn, String personalIDNo) throws SQLException {
         String sql = "SELECT COUNT(*) FROM customers WHERE personalIDNo = ?";
         PreparedStatement preparedStatement = conn.prepareStatement(sql);
@@ -304,29 +302,45 @@ public class MethodsToolRentalApp {
                 System.out.println("Send to service now? y/n");
                 char confirm = scanner.nextLine().charAt(0);
 
-                while (confirm == 'y') {
-                    PreparedStatement toolReset = conn.prepareStatement("UPDATE main SET untilService = 500 WHERE toolID = ?");
-                    toolReset.setString(1, newToolID);
-                    if (toolReset.executeUpdate() > 0) {
-                        System.out.println("Service hours for the tool have been reset to 500");
-
-                    } else {
-                        System.out.println("Resetting service hours failed");
-                    }
-                    break;
-                }
-                if (confirm == 'n'){
+                if (confirm == 'n') {
 
                     System.out.println("NB! The tool will not be available until after the service!");
                     System.out.println("Send to service now? y/n");
                     confirm = scanner.nextLine().charAt(0);
-                    PreparedStatement resetLater = conn.prepareStatement("UPDATE main SET available = 0 WHERE toolID = ?");
-                    resetLater.setString(1, newToolID);
-                    resetLater.executeUpdate();
+                    if (confirm == 'n') {
+                        PreparedStatement resetLater = conn.prepareStatement("UPDATE main SET available = 0 WHERE toolID = ?");
+                        resetLater.setString(1, newToolID);
+                        resetLater.executeUpdate();
+                        System.out.println("The tool will be automatically sent to service.\nRe-enter the tool ID and enter 0 worked hours:");
+                        PreparedStatement toolReset = conn.prepareStatement("UPDATE main SET untilService = 500 WHERE toolID = ?");
+                        toolReset.setString(1, newToolID);
+                        toolReset.executeUpdate();
+                        returnTool(conn, scanner);
+                        if (toolReset.executeUpdate() > 0) {
+                            System.out.println("Service hours for the tool have been reset to 500");
+                        } else {
+                            System.out.println("Resetting service hours failed");
+
+                        }
+
+                    }
+
+                    while (confirm == 'y') {
+                        PreparedStatement toolReset = conn.prepareStatement("UPDATE main SET untilService = 500 WHERE toolID = ?");
+                        toolReset.setString(1, newToolID);
+                        if (toolReset.executeUpdate() > 0) {
+                            System.out.println("Service hours for the tool have been reset to 500");
+
+                        } else {
+                            System.out.println("Resetting service hours failed");
+                        }
+                        break;
+                    }
+
+                } else {
+                    System.out.println("Till service " + hours + " hours. All ok");
                 }
 
-            } else {
-                System.out.println("Till service " + hours + " hours. All ok");
             }
         }
     }
@@ -364,7 +378,7 @@ public class MethodsToolRentalApp {
                 numOfDays = scanner.nextInt();
             }
             double rentPrice = pricePerDay * numOfDays;
-            System.out.println("Rent price is: " + rentPrice);
+            System.out.println("Rent price is: " + rentPrice + " EUR");
             return rentPrice;
         } else {
             System.out.println("Tool not found");
@@ -402,7 +416,7 @@ public class MethodsToolRentalApp {
         isNowAvailable.setString(1, toolIDSc);
         ResultSet resultSet3 = isNowAvailable.executeQuery();
         // Pārbauda, vai un kas ir paņēmis instrumentu. Ja ir paņemts, norāda klienta datus
-        PreparedStatement takenBy = conn.prepareStatement("SELECT * FROM main WHERE available = 0 AND toolID = ?");
+        PreparedStatement takenBy = conn.prepareStatement("SELECT * FROM main WHERE available = 0 AND untilService > 24 AND toolID = ?");
         takenBy.setString(1, toolIDSc);
         ResultSet resultSet4 = takenBy.executeQuery();
         // Pārbauda, vai nav atlikts service reset
@@ -413,16 +427,18 @@ public class MethodsToolRentalApp {
         PreparedStatement inMain = conn.prepareStatement("SELECT toolID FROM main WHERE toolID = ?");
         inMain.setString(1, toolIDSc);
         ResultSet resultSet5 = inMain.executeQuery();
+
+
 // JAUNS!
         if (resultSet.next()) {
-            if (!resultSet2.next() || resultSet3.next()) {
+            if (resultSet6.next() && !resultSet4.next()) {
+                hoursTillService(conn, toolIDSc, scanner);
+            } else if (!resultSet2.next() || resultSet3.next()) {
                 System.out.println("ID: " + resultSet.getString(2) + "\t Name: " + resultSet.getString(3));
                 System.out.println("Tool is available");
                 updateMainDb(conn);
-            } else if (resultSet6.next()) {
-                hoursTillService(conn, toolIDSc, scanner);
 
-            } else if (resultSet4.next()) {
+            } else if (resultSet4.next() && !resultSet6.next()) {
                 System.out.println("Handed out to:\n"
                         + resultSet4.getString(6) + ", " + resultSet4.getString(7) + ", " + resultSet4.getString(8));
             }
